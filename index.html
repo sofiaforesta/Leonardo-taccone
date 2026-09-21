@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="it" data-view="strip">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leonardo Taccone</title>
+  <meta name="description" content="Portfolio di Leonardo Taccone.">
+  <meta name="theme-color" content="#000000">
+  <script>
+    // scelta della versione prima del primo render: niente lampo e niente immagini scaricate a vuoto
+    var v = location.hash.slice(1);
+    if (v === 'grid' || v === 'strip' || v === 'all' || v === 'wrap' || v === 'cluster') document.documentElement.dataset.view = v;
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Design Figma a 1920px di larghezza.
+         --w: 1px del design in proporzione alla larghezza (header e graffito, mai ridotti in altezza).
+         --u: 1px del design per le cover, ridotto se serve per far stare tutto nella viewport. */
+      --w: calc(100vw / 1920);
+      --head: calc(143 * var(--w));   /* titolo 128 + margine 15 */
+      --decor: calc(235 * var(--w));  /* graffito a tutta larghezza, proporzioni 1920×235 */
+      /* griglia: 968u di cover e margini + 36px fissi tra le righe (per il nome in hover) */
+      --u: min(var(--w), (100dvh - var(--head) - var(--decor) - 36px) / 968);
+      --bg: #000;
+      --fg: #fff;
+      --font: "D-DIN Condensed", "DIN Condensed", "Barlow Condensed", "Arial Narrow", sans-serif;
+    }
+
+    :root[data-view="strip"] {
+      --u: min(var(--w), (100dvh - var(--head) - var(--decor)) / 990);
+    }
+
+    /* opzione 3 · tutte le cover insieme: 8×2 (schermi larghi) o 4×4 (quasi quadrati).
+       La cover (--t) è la più grande che sta sia in larghezza sia nello spazio tra titolo e graffito. */
+    :root[data-view="all"] {
+      --u: var(--w);
+      --cols: 8;
+      --rows: 2;
+      --cg: calc(24 * var(--w));                 /* spazio tra le colonne */
+      --rg: calc(28 * var(--w) + 36px);          /* tra le righe: nome + 16px + 20px d'aria */
+      --top: calc(28 * var(--w) + 24px);         /* spazio per il nome sopra la prima riga */
+      --bot: 24px;
+      --t: min(
+        (100vw - 70 * var(--w) - (var(--cols) - 1) * var(--cg)) / var(--cols),
+        (100dvh - var(--head) - var(--decor) - var(--top) - var(--bot) - (var(--rows) - 1) * var(--rg)) / var(--rows)
+      );
+    }
+    @media (max-aspect-ratio: 1/1) {
+      :root[data-view="all"] { --cols: 4; --rows: 4; }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font);
+    }
+
+    .page {
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ---------- header ---------- */
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: calc(15 * var(--w)) calc(85 * var(--w)) 0 calc(35 * var(--w));
+    }
+
+    .brand {
+      margin: 0;
+      font-size: calc(128 * var(--w));
+      font-weight: 700;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .about {
+      font-size: calc(40 * var(--w));
+      font-weight: 400;
+      line-height: 1;
+      text-transform: uppercase;
+      color: inherit;
+      text-decoration: none;
+    }
+    .about:hover,
+    .about:focus-visible { text-decoration: underline; text-underline-offset: 0.2em; }
+
+
+    /* ---------- selettore di vista (come la barra di Finder) ---------- */
+    .tools { display: flex; align-items: center; gap: calc(48 * var(--w)); }
+    .view-switch {
+      font-size: clamp(12px, calc(19 * var(--w)), 26px);
+      display: inline-flex;
+      align-items: center;
+      padding: .2em;
+      border-radius: .95em;
+      background: #1c1c1e;
+      box-shadow: inset 0 0 0 1px #2c2c2e;
+    }
+    .view-switch button {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 2.75em;
+      height: 2.25em;
+      padding: 0;
+      border: 0;
+      border-radius: .7em;
+      background: transparent;
+      color: #d4d4d8;
+      cursor: pointer;
+      transition: background .2s, color .2s, box-shadow .2s;
+    }
+    .view-switch button + button::before {     /* separatore sottile tra le voci */
+      content: "";
+      position: absolute;
+      left: -1px;
+      top: .55em;
+      bottom: .55em;
+      width: 1px;
+      background: #3a3a3d;
+      transition: opacity .2s;
+    }
+    .view-switch svg {
+      width: 1.5em;
+      height: 1.5em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .view-switch svg .dot { fill: currentColor; stroke: none; }
+    .view-switch button:hover { background: #2a2a2d; color: #fff; }
+    .view-switch button[aria-checked="true"] {
+      background: #3a3a3d;
+      color: #fff;
+      box-shadow: inset 0 0 0 1px #505055, 0 1px 3px rgba(0, 0, 0, .55);
+    }
+    .view-switch button[aria-checked="true"]::before,
+    .view-switch button[aria-checked="true"] + button::before { opacity: 0; }
+    .view-switch button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+    /* cambio di vista: ogni cover scivola dalla vecchia alla nuova posizione (dove il browser lo supporta) */
+    .strip .work:nth-child(1) { view-transition-name: cover-1; }
+    .strip .work:nth-child(2) { view-transition-name: cover-2; }
+    .strip .work:nth-child(3) { view-transition-name: cover-3; }
+    .strip .work:nth-child(4) { view-transition-name: cover-4; }
+    .strip .work:nth-child(5) { view-transition-name: cover-5; }
+    .strip .work:nth-child(6) { view-transition-name: cover-6; }
+    .strip .work:nth-child(7) { view-transition-name: cover-7; }
+    .strip .work:nth-child(8) { view-transition-name: cover-8; }
+    .strip .work:nth-child(9) { view-transition-name: cover-9; }
+    .strip .work:nth-child(10) { view-transition-name: cover-10; }
+    .strip .work:nth-child(11) { view-transition-name: cover-11; }
+    .strip .work:nth-child(12) { view-transition-name: cover-12; }
+    .strip .work:nth-child(13) { view-transition-name: cover-13; }
+    .strip .work:nth-child(14) { view-transition-name: cover-14; }
+    .strip .work:nth-child(15) { view-transition-name: cover-15; }
+    .strip .work:nth-child(16) { view-transition-name: cover-16; }
+    ::view-transition-group(*) {
+      animation-duration: .6s;
+      animation-timing-function: cubic-bezier(.22, 1, .36, 1);
+    }
+    ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .25s; }
+
+    /* ---------- lavori ---------- */
+    .stage {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      align-items: center;
+    }
+    [data-view="grid"]  .stage { padding: calc(162 * var(--u)) 0 calc(71 * var(--u)); }
+    [data-view="strip"] .stage { padding: calc(245 * var(--u)) 0 calc(154 * var(--u)); }
+
+    [data-view="grid"]  .strip,
+    [data-view="strip"] .grid,
+    [data-view="all"]   .grid,
+    [data-view="wrap"]  .grid,
+    [data-view="cluster"] .grid { display: none; }
+    [data-view="all"] .stage { padding: var(--top) 0 var(--bot); }
+
+    .works { list-style: none; margin: 0; padding: 0; }
+
+    .work {
+      position: relative;
+      aspect-ratio: 1;
+    }
+    .work a {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #111;
+      color: var(--fg);
+    }
+    .work a:focus-visible { outline: 2px solid var(--fg); outline-offset: -6px; }
+
+    /* nome del progetto: sopra la cover, allineato a sinistra, a 16px di distanza */
+    .name {
+      position: absolute;
+      left: 0;
+      bottom: calc(100% + 16px);
+      font-size: calc(28 * var(--u));
+      font-weight: 400;
+      line-height: 1;
+      text-transform: uppercase;
+      color: var(--fg);
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+    }
+    .work a:hover .name,
+    .work a:focus-visible .name { opacity: 1; transform: none; }
+    .work img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      -webkit-user-drag: none;
+      transition: transform .5s cubic-bezier(.2, .7, .2, 1);
+    }
+    .work a:hover img,
+    .work a:focus-visible img { transform: scale(1.04); }
+
+    /* opzione 1 · griglia 3×2 */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      column-gap: calc(37.56 * var(--u));
+      row-gap: calc(28 * var(--u) + 36px); /* nome (28u) + 16px di distanza + 20px d'aria sopra */
+      width: calc(1139.62 * var(--u));
+      margin: 0 auto;
+    }
+
+    /* opzione 1 · versione 2 · striscia orizzontale */
+    .strip {
+      display: flex;
+      gap: calc(62.76 * var(--u));
+      padding-inline: calc(35 * var(--u));
+      /* spazio per il nome sopra le cover (overflow-x taglierebbe anche in verticale) */
+      padding-top: calc(28 * var(--u) + 20px);
+      margin-top: calc(-28 * var(--u) - 20px);
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      cursor: grab;
+    }
+    .strip::-webkit-scrollbar { display: none; }
+    .strip.dragging { cursor: grabbing; user-select: none; }
+    .strip .work { flex: 0 0 calc(589.66 * var(--u)); }
+
+    /* striscia infinita: due copie delle cover (prima e dopo le originali), visibili solo qui */
+    .work.clone { display: none; }
+    [data-view="strip"] .work.clone { display: block; }
+    [data-view="strip"] .work.clone.before { order: -1; }
+    [data-view="strip"] .work.clone.after { order: 1; }
+
+    /* opzione 3 · stessa lista della striscia, disposta a griglia senza scorrimento */
+    [data-view="all"] .strip {
+      display: grid;
+      grid-template-columns: repeat(var(--cols), var(--t));
+      gap: var(--rg) var(--cg);
+      justify-content: center;
+      padding: 0;
+      margin: 0;
+      overflow: visible;
+      cursor: auto;
+    }
+    [data-view="all"] .work,
+    [data-view="wrap"] .work,
+    [data-view="cluster"] .work { transition: transform .3s cubic-bezier(.2, .7, .2, 1); }
+    [data-view="all"] .work:hover,
+    [data-view="all"] .work:has(a:focus-visible),
+    [data-view="wrap"] .work:hover,
+    [data-view="wrap"] .work:has(a:focus-visible),
+    [data-view="cluster"] .work:hover,
+    [data-view="cluster"] .work:has(a:focus-visible) { transform: scale(1.08); z-index: 2; }
+    [data-view="all"] .work a:hover img,
+    [data-view="all"] .work a:focus-visible img,
+    [data-view="wrap"] .work a:hover img,
+    [data-view="wrap"] .work a:focus-visible img,
+    [data-view="cluster"] .work a:hover img,
+    [data-view="cluster"] .work a:focus-visible img { transform: none; }
+
+    /* opzione 4 · cover 290×290 (design 1920px) a capo e centrate: 6 + 6 + 4, in ordine fisso (--o).
+       Il graffito sale di 54 sopra l'ultima riga, come nel design. */
+    :root[data-view="wrap"] {
+      /* 127 sotto il titolo + 3 righe da 290,01 + 2 spazi da 27,21 = 1051,45u */
+      --u: min(var(--w), (100dvh - var(--head) - var(--decor) + 54 * var(--w)) / 1051.45);
+    }
+    [data-view="wrap"] .stage { padding: calc(127 * var(--u)) 0 0; }
+    [data-view="wrap"] .strip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      gap: calc(27.21 * var(--u));
+      width: calc(1876.11 * var(--u) + 2px);   /* esattamente 6 cover per riga */
+      margin: 0 auto;
+      padding: 0;
+      overflow: visible;
+      cursor: auto;
+    }
+    [data-view="wrap"] .work { flex: 0 0 calc(290.01 * var(--u)); order: var(--o); }
+    [data-view="wrap"] .name { text-shadow: 0 0 10px #000, 0 0 3px #000; }  /* il nome può finire sopra la riga precedente */
+    [data-view="wrap"] .decor { position: relative; z-index: 1; margin-top: calc(-54 * var(--w)); }
+
+    /* opzione 5 · cover quadrate di misure diverse, a grappolo (come le app dell'Apple Watch):
+       nido d'ape 5-6-5: cover +20% al centro e -30% ai lati rispetto alla misura di base,
+       stesso spazio tra le cover in orizzontale e in verticale, senza sovrapposizioni.
+       Le posizioni (--l, --t, --s) sono in unità di passo --p; le prime cover dell'ordine vanno al centro. */
+    :root[data-view="cluster"] {
+      --u: var(--w);
+      --top: calc(28 * var(--w) + 20px);   /* spazio per il nome sopra la prima riga */
+      --bot: 12px;
+      --p: min(
+        (100vw - 70 * var(--w)) / 6.300,
+        (100dvh - var(--head) - var(--decor) - var(--top) - var(--bot)) / 3.619
+      );
+    }
+    [data-view="cluster"] .stage { padding: var(--top) 0 var(--bot); justify-items: center; }
+    [data-view="cluster"] .strip {
+      position: relative;
+      display: block;
+      width: calc(6.300 * var(--p));
+      height: calc(3.619 * var(--p));
+      padding: 0;
+      margin: 0;
+      overflow: visible;
+      cursor: auto;
+    }
+    @media (min-width: 721px) {
+      [data-view="cluster"] .work {
+        position: absolute;
+        left: calc(var(--p) * var(--l));
+        top: calc(var(--p) * var(--t));
+        width: calc(var(--p) * var(--s));
+        height: calc(var(--p) * var(--s));
+      }
+    }
+    [data-view="cluster"] .name { text-shadow: 0 0 10px #000, 0 0 3px #000; }
+    /* il movimento delle cover (hover compreso) lo anima lo script con una molla, non il CSS */
+    @media (min-width: 721px) {
+      [data-view="cluster"] .work,
+      [data-view="cluster"] .work:hover,
+      [data-view="cluster"] .work:has(a:focus-visible) { transition: none; will-change: transform; }
+      [data-view="cluster"] .work:hover,
+      [data-view="cluster"] .work:has(a:focus-visible) { transform: none; }
+    }
+    [data-view="cluster"] .strip .work:nth-child(1) { --l: 0.611; --t: 2.688; --s: 0.772; }
+    [data-view="cluster"] .strip .work:nth-child(2) { --l: 4.917; --t: 2.688; --s: 0.772; }
+    [data-view="cluster"] .strip .work:nth-child(3) { --l: 1.503; --t: 0.054; --s: 0.982; }
+    [data-view="cluster"] .strip .work:nth-child(4) { --l: 1.503; --t: 2.584; --s: 0.982; }
+    [data-view="cluster"] .strip .work:nth-child(5) { --l: 3.815; --t: 2.584; --s: 0.982; }
+    [data-view="cluster"] .strip .work:nth-child(6) { --l: 4.530; --t: 1.335; --s: 0.950; }
+    [data-view="cluster"] .strip .work:nth-child(7) { --l: 0.611; --t: 0.159; --s: 0.772; }
+    [data-view="cluster"] .strip .work:nth-child(8) { --l: 3.210; --t: 1.210; --s: 1.200; }
+    [data-view="cluster"] .strip .work:nth-child(9) { --l: 2.605; --t: 0.000; --s: 1.090; }
+    [data-view="cluster"] .strip .work:nth-child(10) { --l: 1.890; --t: 1.210; --s: 1.200; }
+    [data-view="cluster"] .strip .work:nth-child(11) { --l: 2.605; --t: 2.530; --s: 1.090; }
+    [data-view="cluster"] .strip .work:nth-child(12) { --l: 3.815; --t: 0.054; --s: 0.982; }
+    [data-view="cluster"] .strip .work:nth-child(13) { --l: 0.820; --t: 1.335; --s: 0.950; }
+    [data-view="cluster"] .strip .work:nth-child(14) { --l: 4.917; --t: 0.159; --s: 0.772; }
+    [data-view="cluster"] .strip .work:nth-child(15) { --l: 0.000; --t: 1.460; --s: 0.700; }
+    [data-view="cluster"] .strip .work:nth-child(16) { --l: 5.600; --t: 1.460; --s: 0.700; }
+
+    /* ---------- decorazione ---------- */
+    .decor {
+      display: block;
+      flex: none;
+      width: 100%;
+      height: auto;
+      pointer-events: none;
+    }
+
+    /* ---------- mobile: qui la pagina scorre normalmente ---------- */
+    @media (max-width: 720px) {
+      .page { height: auto; min-height: 100dvh; }
+      .decor { height: max(var(--decor), 72px); object-fit: cover; object-position: center bottom; }
+      .top { padding: 16px; align-items: flex-start; gap: 16px; }
+      .brand { font-size: 13vw; }
+      .about { font-size: 5.5vw; padding-top: 2vw; }
+      .tools { flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
+      .view-switch { font-size: 12px; }
+
+      [data-view="grid"]  .stage,
+      [data-view="strip"] .stage { padding: 40px 0 32px; }
+
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        width: calc(100% - 32px);
+      }
+      .strip { gap: 16px; padding-inline: 16px; }
+      .strip .work { flex-basis: 72vw; }
+      .name { font-size: 14px; }
+
+      [data-view="all"] .stage { padding: 40px 0 32px; }
+      [data-view="all"] .strip {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        padding: 0 16px;
+      }
+
+      [data-view="wrap"] .stage { padding: 40px 0 32px; }
+      [data-view="wrap"] .strip {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        width: auto;
+        padding: 0 16px;
+      }
+      [data-view="wrap"] .decor { margin-top: 0; }
+
+      [data-view="cluster"] .stage { padding: 40px 0 32px; }
+      [data-view="cluster"] .strip {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        width: auto;
+        height: auto;
+        padding: 0 16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none; }
+      .work img, .name, [data-view="all"] .work, [data-view="wrap"] .work, [data-view="cluster"] .work { transition: none; }
+      .name { transform: none; }
+      .work a:hover img,
+      .work a:focus-visible img { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="top">
+      <h1 class="brand">Leonardo Taccone</h1>
+      <div class="tools">
+        <div class="view-switch" role="radiogroup" aria-label="Vista">
+          <button type="button" role="radio" data-view="strip" aria-checked="true" aria-label="Striscia" title="Striscia">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
+          </button>
+          <button type="button" role="radio" data-view="wrap" aria-checked="false" aria-label="Righe di cover" title="Righe di cover">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle class="dot" cx="4.5" cy="6.5" r="1.3"/><circle class="dot" cx="4.5" cy="12" r="1.3"/><circle class="dot" cx="4.5" cy="17.5" r="1.3"/><path d="M9 6.5h11.5M9 12h11.5M9 17.5h11.5"/></svg>
+          </button>
+          <button type="button" role="radio" data-view="cluster" aria-checked="false" aria-label="Grappolo" title="Grappolo">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9.2 4.5v15M14.8 4.5v15"/></svg>
+          </button>
+        </div>
+        <a class="about" href="#about">About</a>
+      </div>
+    </header>
+
+    <main class="stage">
+      <!-- Opzione 1: griglia (apri con index.html oppure index.html#grid) -->
+      <ul class="works grid">
+        <li class="work"><a href="#"><img src="Assets/cover-10.png" width="590" height="589" alt="Minimi Storici: tre figure primitive con lance e lettering marrone su fondo giallo"><span class="name" aria-hidden="true">Minimi Storici</span></a></li>
+        <li class="work"><a href="#"><img src="Assets/cover-9.png" width="590" height="590" alt="Astronave bianca con la scritta Discosizer su fondo nero"><span class="name" aria-hidden="true">Discosizer</span></a></li>
+        <li class="work"><a href="#"><img src="Assets/Cover-8.png" width="590" height="590" alt="Illustrazione di mani che reggono un telescopio, una stella e una mela verde"><span class="name" aria-hidden="true">Progetto 08</span></a></li>
+        <li class="work"><a href="#"><img src="Assets/cover-11.png" width="590" height="589" alt="Ragazzo con casco che vola su un carrello con bidone verde tra i grattacieli"><span class="name" aria-hidden="true">Progetto 11</span></a></li>
+        <li class="work"><a href="#"><img src="Assets/cover-12.png" width="590" height="589" alt="Disegno a penna di un rospo gigante trafitto da lance"><span class="name" aria-hidden="true">Progetto 12</span></a></li>
+        <li class="work"><a href="#"><img src="Assets/cover-7.png" width="590" height="589" alt="Veicolo scuro su un prato con la scritta EX-CA"><span class="name" aria-hidden="true">Progetto 07</span></a></li>
+      </ul>
+
+      <!-- Opzione 1, versione 2: striscia scorrevole (index.html#strip) -->
+      <ul class="works strip">
+        <li class="work" style="--o:12"><a href="#"><img src="Assets/Cover-1.png" width="590" height="589" alt="Furgone verde acqua Atomic Express su una strada di campagna"><span class="name" aria-hidden="true">Atomic Express</span></a></li>
+        <li class="work" style="--o:14"><a href="#"><img src="Assets/cover-2.png" width="590" height="589" alt="Dettaglio di un dispositivo sci-fi con ottiche gemelle e clip arancione"><span class="name" aria-hidden="true">Progetto 02</span></a></li>
+        <li class="work" style="--o:5"><a href="#"><img src="Assets/cover-3.png" width="590" height="589" alt="Veicolo corazzato bianco con cannone, in rendering 3D"><span class="name" aria-hidden="true">Progetto 03</span></a></li>
+        <li class="work" style="--o:6"><a href="#"><img src="Assets/cover-4.png" width="587" height="587" alt="Barca-casa galleggiante su acqua verde, vista dall'alto"><span class="name" aria-hidden="true">Progetto 04</span></a></li>
+        <li class="work" style="--o:8"><a href="#"><img loading="lazy" src="Assets/cover-5.png" width="590" height="589" alt="Torre cilindrica in un mercato desertico attraversato da teli e cavi"><span class="name" aria-hidden="true">Progetto 05</span></a></li>
+        <li class="work" style="--o:10"><a href="#"><img loading="lazy" src="Assets/cover-6.png" width="590" height="589" alt="Personaggio dalla pelle blu con un secchio luminescente, con note di character design"><span class="name" aria-hidden="true">Lito</span></a></li>
+        <li class="work" style="--o:11"><a href="#"><img loading="lazy" src="Assets/cover-7.png" width="590" height="589" alt="Veicolo scuro su un prato con la scritta EX-CA"><span class="name" aria-hidden="true">Progetto 07</span></a></li>
+        <li class="work" style="--o:2"><a href="#"><img loading="lazy" src="Assets/Cover-8.png" width="590" height="590" alt="Illustrazione di mani che reggono un telescopio, una stella e una mela verde"><span class="name" aria-hidden="true">Progetto 08</span></a></li>
+        <li class="work" style="--o:3"><a href="#"><img loading="lazy" src="Assets/cover-9.png" width="590" height="590" alt="Astronave bianca con la scritta Discosizer su fondo nero"><span class="name" aria-hidden="true">Discosizer</span></a></li>
+        <li class="work" style="--o:1"><a href="#"><img loading="lazy" src="Assets/cover-10.png" width="590" height="589" alt="Minimi Storici: tre figure primitive con lance e lettering marrone su fondo giallo"><span class="name" aria-hidden="true">Minimi Storici</span></a></li>
+        <li class="work" style="--o:4"><a href="#"><img loading="lazy" src="Assets/cover-11.png" width="590" height="589" alt="Ragazzo con casco che vola su un carrello con bidone verde tra i grattacieli"><span class="name" aria-hidden="true">Progetto 11</span></a></li>
+        <li class="work" style="--o:7"><a href="#"><img loading="lazy" src="Assets/cover-12.png" width="590" height="589" alt="Disegno a penna di un rospo gigante trafitto da lance"><span class="name" aria-hidden="true">Progetto 12</span></a></li>
+        <li class="work" style="--o:9"><a href="#"><img loading="lazy" src="Assets/cover-13.png" width="590" height="589" alt="Sottopasso con muro a graffiti e auto verdi"><span class="name" aria-hidden="true">Progetto 13</span></a></li>
+        <li class="work" style="--o:13"><a href="#"><img loading="lazy" src="Assets/cover-14.png" width="590" height="589" alt="Fiore dipinto in giallo e blu su fondo scuro"><span class="name" aria-hidden="true">Progetto 14</span></a></li>
+        <li class="work" style="--o:15"><a href="#"><img loading="lazy" src="Assets/cover-16.png" width="590" height="589" alt="Figura con un'ascia su sfondo viola e la scritta Riarmo"><span class="name" aria-hidden="true">Riarmo</span></a></li>
+        <li class="work" style="--o:16"><a href="#"><img loading="lazy" src="Assets/cover-17.png" width="590" height="589" alt="Omini con la testa bianca su fondo rosso"><span class="name" aria-hidden="true">Progetto 17</span></a></li>
+      </ul>
+    </main>
+
+    <img class="decor" src="Assets/VEECTORS.png" width="1920" height="235" alt="">
+  </div>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var strip = document.querySelector('.strip');
+
+      // striscia infinita: [copia][originali][copia]. Si resta sempre nella zona delle originali
+      // e, uscendone, si salta di una copia intera: le tre sono identiche, quindi il salto non si vede.
+      var originals = Array.prototype.slice.call(strip.children);
+      var before = [], after = [];
+      function makeClones(kind, list) {
+        originals.forEach(function (li) {
+          var c = li.cloneNode(true);
+          c.classList.add('clone', kind);
+          c.setAttribute('aria-hidden', 'true');          // le copie non sono per tastiera né per screen reader
+          c.querySelectorAll('a').forEach(function (a) { a.tabIndex = -1; });
+          var img = c.querySelector('img');
+          if (img) img.loading = 'lazy';
+          list.push(c);
+        });
+      }
+      makeClones('before', before);
+      makeClones('after', after);
+      before.forEach(function (c) { strip.appendChild(c); });
+      after.forEach(function (c) { strip.appendChild(c); });
+
+      function stripSet() { return originals[0].offsetLeft - before[0].offsetLeft; }   // larghezza di una copia (0 se nascosta)
+      var goal = null, glideRaf = 0, glideLast = 0;
+      var rel = 0;                                           // posizione dentro la copia centrale, da 0 a 1
+
+      function resetStrip() {
+        var S = stripSet();
+        if (S) strip.scrollLeft = S;
+        goal = null; rel = 0;
+      }
+
+      function loopStrip() {
+        if (root.dataset.view !== 'strip') return;
+        var S = stripSet();
+        if (!S) return;
+        var x = strip.scrollLeft;
+        var target = S + (((x - S) % S) + S) % S;          // riporta x nella zona [S, 2S)
+        var d = target - x;
+        if (Math.abs(d) > 0.5) {
+          strip.scrollLeft = target;
+          if (goal !== null) goal += d;
+          startLeft += d;
+        }
+        rel = (strip.scrollLeft - S) / S;
+      }
+      strip.addEventListener('scroll', loopStrip, { passive: true });
+
+      // se cambia la misura delle cover (finestra ridimensionata) si mantiene la stessa posizione relativa
+      if (window.ResizeObserver) {
+        new ResizeObserver(function () {
+          if (root.dataset.view !== 'strip') return;
+          var S = stripSet();
+          if (S) strip.scrollLeft = S + rel * S;
+        }).observe(strip);
+      }
+
+      // rotella/trackpad verticale → scorrimento orizzontale, con un'inerzia morbida
+      function glide(now) {
+        var dt = Math.min(0.05, (now - glideLast) / 1000 || 0.016); glideLast = now;
+        if (goal === null) { glideRaf = 0; return; }
+        var d = goal - strip.scrollLeft;
+        if (Math.abs(d) < 0.5) { strip.scrollLeft = goal; goal = null; glideRaf = 0; return; }
+        strip.scrollLeft += d * (1 - Math.exp(-dt / 0.09));
+        glideRaf = requestAnimationFrame(glide);
+      }
+
+      // La vista si sceglie col selettore in alto o con l'hash: #strip, #wrap, #cluster (e #grid, #all).
+      // Il selettore cambia l'hash; qui l'hash diventa la vista, con transizione se il browser la supporta.
+      var VIEWS = ['grid', 'strip', 'all', 'wrap', 'cluster'];
+      var switchBtns = Array.prototype.slice.call(document.querySelectorAll('.view-switch button'));
+
+      function applyView(v) {
+        root.dataset.view = v;
+        resetTiles();
+        if (v === 'strip') { resetStrip(); startAuto(); } else stopAuto();
+        switchBtns.forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.view === v)); });
+      }
+
+      function syncView(animate) {
+        var v = location.hash.slice(1);
+        if (VIEWS.indexOf(v) === -1 || v === root.dataset.view) { applyView(root.dataset.view); return; }
+        if (animate && document.startViewTransition && !calm.matches) document.startViewTransition(function () { applyView(v); });
+        else applyView(v);
+      }
+
+      document.querySelector('.view-switch').addEventListener('click', function (e) {
+        var b = e.target.closest('button');
+        if (b) location.hash = b.dataset.view;
+      });
+
+      // opzione 5 · la cover in hover resta ferma e si ingrandisce, come un centro di gravità:
+      // le altre scivolano via con una molla (movimento continuo, senza scatti). A ogni fotogramma
+      // un passo di correzione garantisce 24px di respiro dalla cover in hover e che nessuna coppia
+      // di cover si tocchi mai. Lo anima questo script, non il CSS.
+      var works = originals;         // solo le 16 originali (le copie della striscia restano fuori)
+      var calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+      var SCALE = 1.08;              // ingrandimento della cover in hover
+      var CLEAR = 24;                // respiro tra la cover in hover e le altre (px a 1920 di larghezza)
+      var MIN_GAP = 12;              // distanza minima tra due cover qualsiasi (px a 1920)
+      var AMP = 0.12;                // spinta a distanza, in lati della cover in hover
+      var REACH = 1.6;               // raggio d'azione della spinta, in lati
+      var OMEGA = 9, ZETA = 0.9;     // molla: rapidità e smorzamento (1 = nessun rimbalzo)
+
+      var tiles = works.map(function (li) { return { li: li, ox: 0, oy: 0, vx: 0, vy: 0, sc: 1, vs: 0 }; });
+      var active = null, strength = 0, src = { x: 0, y: 0 }, lastSide = 0, raf = 0, last = 0;
+
+      function resetTiles() {
+        cancelAnimationFrame(raf); raf = 0; active = null; strength = 0;
+        tiles.forEach(function (t) {
+          t.ox = t.oy = t.vx = t.vy = t.vs = 0; t.sc = 1;
+          t.li.style.transform = ''; t.li.style.zIndex = '';
+        });
+      }
+
+      function frame(now) {
+        var dt = Math.min(0.032, (now - last) / 1000 || 0.016); last = now;
+        var w = window.innerWidth / 1920, clear = CLEAR * w + 1, gap = MIN_GAP * w + 1;   // +1px: offsetLeft/Width sono arrotondati
+
+        tiles.forEach(function (t) {    // posizione a riposo (il transform non cambia offsetLeft/Top)
+          t.side = t.li.offsetWidth;
+          t.cx = t.li.offsetLeft + t.side / 2;
+          t.cy = t.li.offsetTop + t.side / 2;
+        });
+
+        strength += ((active ? 1 : 0) - strength) * (1 - Math.exp(-dt / 0.2));
+        if (active) {
+          lastSide = active.side;
+          var k = 1 - Math.exp(-dt / 0.12);
+          src.x += (active.cx - src.x) * k; src.y += (active.cy - src.y) * k;
+        }
+
+        // 1) molla verso la posizione obiettivo
+        var c = -2 * ZETA * OMEGA, kk = OMEGA * OMEGA, moving = strength > 0.001;
+        tiles.forEach(function (t) {
+          var tx = 0, ty = 0, ts = 1;
+          if (t === active) ts = SCALE;
+          else if (moving && lastSide) {
+            var dx = t.cx - src.x, dy = t.cy - src.y, d = Math.hypot(dx, dy) || 1;
+            var push = strength * AMP * lastSide * Math.exp(-Math.pow(d / (REACH * lastSide), 2));
+            tx = dx / d * push; ty = dy / d * push;
+          }
+          t.vx += (kk * (tx - t.ox) + c * t.vx) * dt; t.ox += t.vx * dt;
+          t.vy += (kk * (ty - t.oy) + c * t.vy) * dt; t.oy += t.vy * dt;
+          t.vs += (kk * (ts - t.sc) + c * t.vs) * dt; t.sc += t.vs * dt;
+        });
+
+        // 2) vincoli: nessuna cover si tocca; la cover in hover è ferma e ha 24px di respiro
+        //    (le coppie con la cover in hover si risolvono per prime)
+        var pairs = [];
+        for (var i = 0; i < tiles.length; i++) {
+          for (var j = i + 1; j < tiles.length; j++) {
+            if (tiles[i] === active || tiles[j] === active) pairs.unshift([tiles[i], tiles[j]]);
+            else pairs.push([tiles[i], tiles[j]]);
+          }
+        }
+        for (var it = 0; it < 10; it++) {
+          for (var q = 0; q < pairs.length; q++) {
+            var A = pairs[q][0], B = pairs[q][1];
+            var g = (A === active || B === active) ? gap + (clear - gap) * Math.min(1, strength * 1.5) : gap;
+            var half = (A.side * A.sc + B.side * B.sc) / 2 + g;
+            var ddx = (B.cx + B.ox) - (A.cx + A.ox), ddy = (B.cy + B.oy) - (A.cy + A.oy);
+            var px = half - Math.abs(ddx), py = half - Math.abs(ddy);
+            if (px <= 0 || py <= 0) continue;
+            var wA = A === active ? 0 : (B === active ? 1 : 0.5), wB = B === active ? 0 : (A === active ? 1 : 0.5);
+            if (px < py) {
+              var sx = ddx >= 0 ? 1 : -1;
+              A.ox -= sx * px * wA; B.ox += sx * px * wB;
+              if (wA) A.vx *= 0.5;
+              if (wB) B.vx *= 0.5;
+            } else {
+              var sy = ddy >= 0 ? 1 : -1;
+              A.oy -= sy * py * wA; B.oy += sy * py * wB;
+              if (wA) A.vy *= 0.5;
+              if (wB) B.vy *= 0.5;
+            }
+          }
+        }
+
+        // 3) disegno; quando tutto è fermo si spegne il ciclo
+        var settled = !active && strength < 0.001;
+        tiles.forEach(function (t) {
+          if (Math.abs(t.ox) + Math.abs(t.oy) + Math.abs(t.vx) + Math.abs(t.vy) > 0.05 || Math.abs(t.sc - 1) > 0.0005 || Math.abs(t.vs) > 0.001) settled = false;
+        });
+        if (settled) { resetTiles(); return; }
+        tiles.forEach(function (t) {
+          t.li.style.transform = 'translate3d(' + t.ox.toFixed(2) + 'px,' + t.oy.toFixed(2) + 'px,0) scale(' + t.sc.toFixed(4) + ')';
+          t.li.style.zIndex = t.sc > 1.004 ? 2 : '';
+        });
+        raf = requestAnimationFrame(frame);
+      }
+
+      function activate(li) {
+        if (root.dataset.view !== 'cluster' || calm.matches || window.innerWidth <= 720) return;
+        var t = li ? tiles[works.indexOf(li)] : null;
+        if (t === active) return;
+        if (t && strength < 0.02) { src.x = t.li.offsetLeft + t.li.offsetWidth / 2; src.y = t.li.offsetTop + t.li.offsetHeight / 2; }
+        active = t;
+        if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); }
+      }
+
+      strip.addEventListener('pointerover', function (e) {
+        if (e.pointerType === 'mouse') activate(e.target.closest('.work'));
+      });
+      strip.addEventListener('pointerleave', function () { activate(null); });
+      strip.addEventListener('focusin', function (e) { activate(e.target.closest('.work')); });
+      strip.addEventListener('focusout', function () { activate(null); });
+
+      syncView(false);
+      window.addEventListener('hashchange', function () { syncView(true); });
+
+      // scorrimento automatico, lento e continuo. Si ferma con il mouse sopra la striscia, mentre si
+      // trascina o si usa rotella/tocco (poi 2,5 s di pausa) e con il focus da tastiera sulle cover.
+      // Uscendo dall'hover del mouse riparte subito, in modo graduale. Spento con "riduci movimento".
+      var AUTO_SPEED = 60;           // px al secondo a 1920 di larghezza (0 = spento)
+      var AUTO_HOLD = 2500;          // ms di pausa dopo l'ultimo gesto
+      var autoRaf = 0, autoLast = 0, autoV = 0, autoPos = 0, autoSet = 0, hold = 0, hovering = false;
+
+      function holdAuto() { hold = performance.now() + AUTO_HOLD; }
+
+      function autoFrame(now) {
+        var dt = Math.min(0.05, (now - autoLast) / 1000 || 0.016); autoLast = now;
+        if (AUTO_SPEED && !calm.matches) {
+          var paused = hovering || down || goal !== null || now < hold || strip.contains(document.activeElement);
+          var target = paused ? 0 : AUTO_SPEED * window.innerWidth / 1920;
+          autoV += (target - autoV) * (1 - Math.exp(-dt / 0.35));                // accelera/frena in modo graduale
+          if (Math.abs(strip.scrollLeft - autoSet) > 1.5) autoPos = strip.scrollLeft;   // l'ha spostata qualcun altro
+          if (autoV > 0.05) {
+            autoPos += autoV * dt;                                               // posizione con decimali: scrollLeft arrotonda
+            strip.scrollLeft = autoPos;
+            autoSet = strip.scrollLeft;
+          }
+        }
+        autoRaf = requestAnimationFrame(autoFrame);
+      }
+      function startAuto() {
+        if (autoRaf) return;
+        autoLast = performance.now(); autoV = 0; autoPos = autoSet = strip.scrollLeft;
+        autoRaf = requestAnimationFrame(autoFrame);
+      }
+      function stopAuto() { cancelAnimationFrame(autoRaf); autoRaf = 0; autoV = 0; }
+
+      strip.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') hovering = true; });
+      strip.addEventListener('pointerleave', function () { hovering = false; });     // uscendo dall'hover riparte subito (in modo graduale)
+      strip.addEventListener('pointerdown', holdAuto);
+      window.addEventListener('pointerup', holdAuto);
+      ['touchstart', 'touchmove', 'touchend'].forEach(function (n) { strip.addEventListener(n, holdAuto, { passive: true }); });
+
+      // striscia: la rotella verticale scorre in orizzontale, in loop; il mouse trascina
+      strip.addEventListener('wheel', function (e) {
+        if (root.dataset.view !== 'strip' || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+        e.preventDefault();
+        holdAuto();
+        goal = (goal === null ? strip.scrollLeft : goal) + e.deltaY;
+        if (!glideRaf) { glideLast = performance.now(); glideRaf = requestAnimationFrame(glide); }
+      }, { passive: false });
+
+      var down = false, moved = false, startX = 0, startLeft = 0;
+      strip.addEventListener('pointerdown', function (e) {
+        if (root.dataset.view !== 'strip' || e.pointerType !== 'mouse' || e.button !== 0) return;
+        down = true; moved = false; goal = null;
+        startX = e.clientX; startLeft = strip.scrollLeft;
+      });
+      window.addEventListener('pointermove', function (e) {
+        if (!down) return;
+        var dx = e.clientX - startX;
+        if (!moved && Math.abs(dx) > 4) { moved = true; strip.classList.add('dragging'); }
+        if (moved) strip.scrollLeft = startLeft - dx;
+      });
+      window.addEventListener('pointerup', function () {
+        down = false;
+        strip.classList.remove('dragging');
+      });
+      // dopo un trascinamento non deve partire il click sul link
+      strip.addEventListener('click', function (e) {
+        if (moved) { e.preventDefault(); moved = false; }
+      }, true);
+    })();
+  </script>
+</body>
+</html>
