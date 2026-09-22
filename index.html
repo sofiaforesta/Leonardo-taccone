@@ -9,11 +9,13 @@
   <script>
     // scelta della versione prima del primo render: niente lampo e niente immagini scaricate a vuoto
     var v = location.hash.slice(1);
-    if (v === 'grid' || v === 'strip' || v === 'all' || v === 'wrap' || v === 'cluster') document.documentElement.dataset.view = v;
+    if (v === 'wrap') v = 'list';   // alias: i link salvati con #wrap aprono l'elenco
+    if (v === 'grid' || v === 'strip' || v === 'all' || v === 'list' || v === 'cluster') document.documentElement.dataset.view = v;
+    else if (v.indexOf('p-') === 0) document.documentElement.dataset.view = 'detail';
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
       /* Design Figma a 1920px di larghezza.
@@ -188,8 +190,12 @@
     [data-view="grid"]  .strip,
     [data-view="strip"] .grid,
     [data-view="all"]   .grid,
-    [data-view="wrap"]  .grid,
+    [data-view="list"]  .grid,
     [data-view="cluster"] .grid { display: none; }
+
+    .detail { display: none; }
+    [data-view="detail"] .grid,
+    [data-view="detail"] .strip { display: none; }
     [data-view="all"] .stage { padding: var(--top) 0 var(--bot); }
 
     .works { list-style: none; margin: 0; padding: 0; }
@@ -207,6 +213,8 @@
       color: var(--fg);
     }
     .work a:focus-visible { outline: 2px solid var(--fg); outline-offset: -6px; }
+
+    .tech, .style { display: none; }
 
     /* nome del progetto: sopra la cover, allineato a sinistra, a 16px di distanza */
     .name {
@@ -282,43 +290,67 @@
       cursor: auto;
     }
     [data-view="all"] .work,
-    [data-view="wrap"] .work,
     [data-view="cluster"] .work { transition: transform .3s cubic-bezier(.2, .7, .2, 1); }
     [data-view="all"] .work:hover,
     [data-view="all"] .work:has(a:focus-visible),
-    [data-view="wrap"] .work:hover,
-    [data-view="wrap"] .work:has(a:focus-visible),
     [data-view="cluster"] .work:hover,
     [data-view="cluster"] .work:has(a:focus-visible) { transform: scale(1.08); z-index: 2; }
     [data-view="all"] .work a:hover img,
     [data-view="all"] .work a:focus-visible img,
-    [data-view="wrap"] .work a:hover img,
-    [data-view="wrap"] .work a:focus-visible img,
     [data-view="cluster"] .work a:hover img,
     [data-view="cluster"] .work a:focus-visible img { transform: none; }
 
-    /* opzione 4 · cover 290×290 (design 1920px) a capo e centrate: 6 + 6 + 4, in ordine fisso (--o).
-       Il graffito sale di 54 sopra l'ultima riga, come nel design. */
-    :root[data-view="wrap"] {
-      /* 127 sotto il titolo + 3 righe da 290,01 + 2 spazi da 27,21 = 1051,45u */
-      --u: min(var(--w), (100dvh - var(--head) - var(--decor) + 54 * var(--w)) / 1051.45);
-    }
-    [data-view="wrap"] .stage { padding: calc(127 * var(--u)) 0 0; }
-    [data-view="wrap"] .strip {
+    /* opzione 4 · elenco: miniatura + titolo + tecniche + stile su righe, in ordine fisso (--o).
+       Qui la pagina scorre in verticale (le 16 righe non stanno in un solo schermo): --u segue
+       solo la larghezza, senza il vincolo di altezza usato dalle altre viste. */
+    :root[data-view="list"] { --u: var(--w); }
+    [data-view="list"] .page { height: auto; min-height: 100dvh; overflow: visible; }
+    [data-view="list"] .stage { display: block; padding: calc(115 * var(--u)) 0 0; }
+    [data-view="list"] .strip {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: flex-start;
-      gap: calc(27.21 * var(--u));
-      width: calc(1876.11 * var(--u) + 2px);   /* esattamente 6 cover per riga */
+      flex-direction: column;
+      width: calc(1823 * var(--u));
       margin: 0 auto;
       padding: 0;
+      border-top: 1px solid #4d4d4d;
       overflow: visible;
       cursor: auto;
     }
-    [data-view="wrap"] .work { flex: 0 0 calc(290.01 * var(--u)); order: var(--o); }
-    [data-view="wrap"] .name { text-shadow: 0 0 10px #000, 0 0 3px #000; }  /* il nome può finire sopra la riga precedente */
-    [data-view="wrap"] .decor { position: relative; z-index: 1; margin-top: calc(-54 * var(--w)); }
+    [data-view="list"] .work { flex: 0 0 auto; aspect-ratio: auto; width: 100%; order: var(--o); }
+    [data-view="list"] .work a {
+      display: flex;
+      align-items: center;
+      gap: calc(63 * var(--u));
+      width: 100%;
+      height: auto;
+      padding: calc(21 * var(--u)) 0;
+      border-bottom: 1px solid #4d4d4d;
+      background: transparent;
+      transition: background .15s;
+    }
+    [data-view="list"] .work a:hover,
+    [data-view="list"] .work a:focus-visible { background: rgba(255, 255, 255, .05); }
+    [data-view="list"] .work img { flex: none; width: calc(137 * var(--u)); height: calc(137 * var(--u)); }
+    [data-view="list"] .name {
+      position: static;
+      flex: 0 0 calc(390 * var(--u));
+      opacity: 1;
+      transform: none;
+      white-space: normal;
+      font-family: Helvetica, Arial, sans-serif;
+      font-weight: 300;
+      font-size: calc(24 * var(--u));
+    }
+    [data-view="list"] .tech,
+    [data-view="list"] .style {
+      display: block;
+      font-family: Inter, Helvetica, Arial, sans-serif;
+      font-weight: 400;
+      font-size: calc(24 * var(--u));
+      color: var(--fg);
+    }
+    [data-view="list"] .tech { flex: 0 0 calc(586 * var(--u)); }
+    [data-view="list"] .style { flex: 1 1 calc(295 * var(--u)); }
 
     /* opzione 5 · cover quadrate di misure diverse, a grappolo (come le app dell'Apple Watch):
        nido d'ape 5-6-5: cover +20% al centro e -30% ai lati rispetto alla misura di base,
@@ -379,6 +411,62 @@
     [data-view="cluster"] .strip .work:nth-child(15) { --l: 0.000; --t: 1.460; --s: 0.700; }
     [data-view="cluster"] .strip .work:nth-child(16) { --l: 5.600; --t: 1.460; --s: 0.700; }
 
+    /* pagina di dettaglio di un progetto (index.html#p-<slug>): due colonne, come l'elenco
+       la pagina scorre in verticale, l'immagine può essere più alta di uno schermo. */
+    :root[data-view="detail"] { --u: var(--w); }
+    [data-view="detail"] .page { height: auto; min-height: 100dvh; overflow: visible; }
+    [data-view="detail"] .stage { display: block; padding: calc(115 * var(--u)) 0 0; }
+    [data-view="detail"] .top { padding-top: calc(29 * var(--w)); }
+    [data-view="detail"] .brand { font-size: calc(96 * var(--w)); }
+    [data-view="detail"] .view-switch { display: none; }   /* qui non ha senso cambiare "vista": è la pagina di un solo progetto */
+
+    .detail {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: calc(99 * var(--u));
+      padding: calc(56 * var(--u)) calc(53 * var(--u)) 0;
+    }
+    .back {
+      display: none;
+      color: var(--fg);
+      font-family: Inter, Helvetica, Arial, sans-serif;
+      font-size: calc(16 * var(--u));
+      text-decoration: none;
+    }
+    [data-view="detail"] .back {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: calc(53 * var(--u));
+    }
+    .back:hover, .back:focus-visible { text-decoration: underline; }
+    .detail-info {
+      flex: 0 0 calc(512 * var(--u));
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: calc(22 * var(--u));
+    }
+    .d-title {
+      margin: 0;
+      color: var(--fg);
+      font-size: calc(42 * var(--u));
+      font-weight: 400;
+      font-family: Inter, Helvetica, Arial, sans-serif;
+    }
+    .d-desc, .d-tech, .d-style {
+      margin: 0;
+      align-self: stretch;
+      color: var(--fg);
+      font-size: calc(24 * var(--u));
+      font-weight: 400;
+      font-family: Inter, Helvetica, Arial, sans-serif;
+      line-height: 1.4;
+    }
+    .detail-gallery { flex: 1 1 auto; min-width: 0; }
+    .d-img { display: block; width: 100%; height: auto; }
+
     /* ---------- decorazione ---------- */
     .decor {
       display: block;
@@ -417,15 +505,19 @@
         padding: 0 16px;
       }
 
-      [data-view="wrap"] .stage { padding: 40px 0 32px; }
-      [data-view="wrap"] .strip {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        width: auto;
-        padding: 0 16px;
+      [data-view="list"] .stage { padding: 32px 0 0; }
+      [data-view="list"] .strip { width: auto; margin: 0 16px; }
+      [data-view="list"] .work { flex-basis: auto; }   /* .strip .work sopra fissa 72vw: qui la si annulla */
+      [data-view="list"] .work a {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        column-gap: 14px;
+        row-gap: 6px;
+        padding: 14px 0;
       }
-      [data-view="wrap"] .decor { margin-top: 0; }
+      [data-view="list"] .work img { width: 72px; height: 72px; }
+      [data-view="list"] .name { flex: 1 1 calc(100% - 86px); font-size: 15px; }
+      [data-view="list"] .tech, [data-view="list"] .style { flex: 1 1 100%; font-size: 12px; opacity: .8; }
 
       [data-view="cluster"] .stage { padding: 40px 0 32px; }
       [data-view="cluster"] .strip {
@@ -436,11 +528,20 @@
         height: auto;
         padding: 0 16px;
       }
+   
+      [data-view="detail"] .stage { padding: 32px 0 0; }
+      [data-view="detail"] .top { padding-top: 16px; }
+      [data-view="detail"] .brand { font-size: 13vw; }
+      .detail { flex-direction: column; gap: 24px; padding: 40px 16px 0; }
+      .back { top: 0; left: 16px; font-size: 13px; }
+      .detail-info { flex-basis: auto; width: 100%; gap: 12px; }
+      .d-title { font-size: 22px; }
+      .d-desc, .d-tech, .d-style { font-size: 14px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
       ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none; }
-      .work img, .name, [data-view="all"] .work, [data-view="wrap"] .work, [data-view="cluster"] .work { transition: none; }
+      .work img, .name, [data-view="all"] .work, [data-view="list"] .work a, [data-view="cluster"] .work { transition: none; }
       .name { transform: none; }
       .work a:hover img,
       .work a:focus-visible img { transform: none; }
@@ -456,7 +557,7 @@
           <button type="button" role="radio" data-view="strip" aria-checked="true" aria-label="Striscia" title="Striscia">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
           </button>
-          <button type="button" role="radio" data-view="wrap" aria-checked="false" aria-label="Righe di cover" title="Righe di cover">
+          <button type="button" role="radio" data-view="list" aria-checked="false" aria-label="Elenco" title="Elenco">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle class="dot" cx="4.5" cy="6.5" r="1.3"/><circle class="dot" cx="4.5" cy="12" r="1.3"/><circle class="dot" cx="4.5" cy="17.5" r="1.3"/><path d="M9 6.5h11.5M9 12h11.5M9 17.5h11.5"/></svg>
           </button>
           <button type="button" role="radio" data-view="cluster" aria-checked="false" aria-label="Grappolo" title="Grappolo">
@@ -470,33 +571,47 @@
     <main class="stage">
       <!-- Opzione 1: griglia (apri con index.html oppure index.html#grid) -->
       <ul class="works grid">
-        <li class="work"><a href="#"><img src="Assets/cover-10.png" width="590" height="589" alt="Minimi Storici: tre figure primitive con lance e lettering marrone su fondo giallo"><span class="name" aria-hidden="true">Minimi Storici</span></a></li>
-        <li class="work"><a href="#"><img src="Assets/cover-9.png" width="590" height="590" alt="Astronave bianca con la scritta Discosizer su fondo nero"><span class="name" aria-hidden="true">Discosizer</span></a></li>
-        <li class="work"><a href="#"><img src="Assets/Cover-8.png" width="590" height="590" alt="Illustrazione di mani che reggono un telescopio, una stella e una mela verde"><span class="name" aria-hidden="true">Progetto 08</span></a></li>
-        <li class="work"><a href="#"><img src="Assets/cover-11.png" width="590" height="589" alt="Ragazzo con casco che vola su un carrello con bidone verde tra i grattacieli"><span class="name" aria-hidden="true">Progetto 11</span></a></li>
-        <li class="work"><a href="#"><img src="Assets/cover-12.png" width="590" height="589" alt="Disegno a penna di un rospo gigante trafitto da lance"><span class="name" aria-hidden="true">Progetto 12</span></a></li>
-        <li class="work"><a href="#"><img src="Assets/cover-7.png" width="590" height="589" alt="Veicolo scuro su un prato con la scritta EX-CA"><span class="name" aria-hidden="true">Progetto 07</span></a></li>
+        <li class="work" data-slug="minimi-storici"><a href="#p-minimi-storici"><img src="Assets/cover-10.png" width="590" height="589" alt="Minimi Storici: tre figure primitive con lance e lettering marrone su fondo giallo"><span class="name" aria-hidden="true">Minimi Storici</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="discosizer"><a href="#p-discosizer"><img src="Assets/cover-9.png" width="590" height="590" alt="Astronave bianca con la scritta Discosizer su fondo nero"><span class="name" aria-hidden="true">Discosizer</span><span class="tech">Graphic Design, Motion Graphics & Social Campaign</span><span class="style">Commercial Campaign / Social Media Design & Motion Graphics</span></a></li>
+        <li class="work" data-slug="scienceup"><a href="#p-scienceup"><img src="Assets/Cover-8.png" width="590" height="590" alt="Illustrazione di mani che reggono un telescopio, una stella e una mela verde"><span class="name" aria-hidden="true">ScienceUp</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="downhill"><a href="#p-downhill"><img src="Assets/cover-11.png" width="590" height="589" alt="Ragazzo con casco che vola su un carrello con bidone verde tra i grattacieli"><span class="name" aria-hidden="true">Downhill</span><span class="tech">Stylized Animation VisDev</span><span class="style">Type: Personal Project / Animated Feature Concept</span></a></li>
+        <li class="work" data-slug="calendar"><a href="#p-calendar"><img src="Assets/cover-12.png" width="590" height="589" alt="Disegno a penna di un rospo gigante trafitto da lance"><span class="name" aria-hidden="true">Calendar</span><span class="tech">Annual Calendar Illustration Series</span><span class="style">Editorial / Calendar Illustration Series & Character Design</span></a></li>
+        <li class="work" data-slug="ex-calibur"><a href="#p-ex-calibur"><img src="Assets/cover-7.png" width="590" height="589" alt="Veicolo scuro su un prato con la scritta EX-CA"><span class="name" aria-hidden="true">Ex-Calibur</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
       </ul>
 
       <!-- Opzione 1, versione 2: striscia scorrevole (index.html#strip) -->
       <ul class="works strip">
-        <li class="work" style="--o:12"><a href="#"><img src="Assets/Cover-1.png" width="590" height="589" alt="Furgone verde acqua Atomic Express su una strada di campagna"><span class="name" aria-hidden="true">Atomic Express</span></a></li>
-        <li class="work" style="--o:14"><a href="#"><img src="Assets/cover-2.png" width="590" height="589" alt="Dettaglio di un dispositivo sci-fi con ottiche gemelle e clip arancione"><span class="name" aria-hidden="true">Progetto 02</span></a></li>
-        <li class="work" style="--o:5"><a href="#"><img src="Assets/cover-3.png" width="590" height="589" alt="Veicolo corazzato bianco con cannone, in rendering 3D"><span class="name" aria-hidden="true">Progetto 03</span></a></li>
-        <li class="work" style="--o:6"><a href="#"><img src="Assets/cover-4.png" width="587" height="587" alt="Barca-casa galleggiante su acqua verde, vista dall'alto"><span class="name" aria-hidden="true">Progetto 04</span></a></li>
-        <li class="work" style="--o:8"><a href="#"><img loading="lazy" src="Assets/cover-5.png" width="590" height="589" alt="Torre cilindrica in un mercato desertico attraversato da teli e cavi"><span class="name" aria-hidden="true">Progetto 05</span></a></li>
-        <li class="work" style="--o:10"><a href="#"><img loading="lazy" src="Assets/cover-6.png" width="590" height="589" alt="Personaggio dalla pelle blu con un secchio luminescente, con note di character design"><span class="name" aria-hidden="true">Lito</span></a></li>
-        <li class="work" style="--o:11"><a href="#"><img loading="lazy" src="Assets/cover-7.png" width="590" height="589" alt="Veicolo scuro su un prato con la scritta EX-CA"><span class="name" aria-hidden="true">Progetto 07</span></a></li>
-        <li class="work" style="--o:2"><a href="#"><img loading="lazy" src="Assets/Cover-8.png" width="590" height="590" alt="Illustrazione di mani che reggono un telescopio, una stella e una mela verde"><span class="name" aria-hidden="true">Progetto 08</span></a></li>
-        <li class="work" style="--o:3"><a href="#"><img loading="lazy" src="Assets/cover-9.png" width="590" height="590" alt="Astronave bianca con la scritta Discosizer su fondo nero"><span class="name" aria-hidden="true">Discosizer</span></a></li>
-        <li class="work" style="--o:1"><a href="#"><img loading="lazy" src="Assets/cover-10.png" width="590" height="589" alt="Minimi Storici: tre figure primitive con lance e lettering marrone su fondo giallo"><span class="name" aria-hidden="true">Minimi Storici</span></a></li>
-        <li class="work" style="--o:4"><a href="#"><img loading="lazy" src="Assets/cover-11.png" width="590" height="589" alt="Ragazzo con casco che vola su un carrello con bidone verde tra i grattacieli"><span class="name" aria-hidden="true">Progetto 11</span></a></li>
-        <li class="work" style="--o:7"><a href="#"><img loading="lazy" src="Assets/cover-12.png" width="590" height="589" alt="Disegno a penna di un rospo gigante trafitto da lance"><span class="name" aria-hidden="true">Progetto 12</span></a></li>
-        <li class="work" style="--o:9"><a href="#"><img loading="lazy" src="Assets/cover-13.png" width="590" height="589" alt="Sottopasso con muro a graffiti e auto verdi"><span class="name" aria-hidden="true">Progetto 13</span></a></li>
-        <li class="work" style="--o:13"><a href="#"><img loading="lazy" src="Assets/cover-14.png" width="590" height="589" alt="Fiore dipinto in giallo e blu su fondo scuro"><span class="name" aria-hidden="true">Progetto 14</span></a></li>
-        <li class="work" style="--o:15"><a href="#"><img loading="lazy" src="Assets/cover-16.png" width="590" height="589" alt="Figura con un'ascia su sfondo viola e la scritta Riarmo"><span class="name" aria-hidden="true">Riarmo</span></a></li>
-        <li class="work" style="--o:16"><a href="#"><img loading="lazy" src="Assets/cover-17.png" width="590" height="589" alt="Omini con la testa bianca su fondo rosso"><span class="name" aria-hidden="true">Progetto 17</span></a></li>
+        <li class="work" data-slug="sipario" style="--o:12"><a href="#p-sipario"><img src="Assets/Cover-1.png" width="590" height="589" alt="Furgone verde acqua Atomic Express su una strada di campagna"><span class="name" aria-hidden="true">Sipario</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="centauri" style="--o:14"><a href="#p-centauri"><img src="Assets/cover-2.png" width="590" height="589" alt="Dettaglio di un dispositivo sci-fi con ottiche gemelle e clip arancione"><span class="name" aria-hidden="true">Centauri</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="railgun-turret" style="--o:5"><a href="#p-railgun-turret"><img src="Assets/cover-3.png" width="590" height="589" alt="Veicolo corazzato bianco con cannone, in rendering 3D"><span class="name" aria-hidden="true">Long Distance Railgun Heavy Duty Mobile Turret</span><span class="tech">Tecniche</span><span class="style">Personal IP / Sci-Fi Character & Vehicle Design</span></a></li>
+        <li class="work" data-slug="floating-settlement" style="--o:6"><a href="#p-floating-settlement"><img src="Assets/cover-4.png" width="587" height="587" alt="Barca-casa galleggiante su acqua verde, vista dall'alto"><span class="name" aria-hidden="true">Floating Settlement</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="desert-city-settlement" style="--o:8"><a href="#p-desert-city-settlement"><img loading="lazy" src="Assets/cover-5.png" width="590" height="589" alt="Torre cilindrica in un mercato desertico attraversato da teli e cavi"><span class="name" aria-hidden="true">Desert City Settlement</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="fisherman-bioluminescent" style="--o:10"><a href="#p-fisherman-bioluminescent"><img loading="lazy" src="Assets/cover-6.png" width="590" height="589" alt="Personaggio dalla pelle blu con un secchio luminescente, con note di character design"><span class="name" aria-hidden="true">The Fisherman & the Bioluminescent Creatures</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="ex-calibur" style="--o:11"><a href="#p-ex-calibur"><img loading="lazy" src="Assets/cover-7.png" width="590" height="589" alt="Veicolo scuro su un prato con la scritta EX-CA"><span class="name" aria-hidden="true">Ex-Calibur</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="scienceup" style="--o:2"><a href="#p-scienceup"><img loading="lazy" src="Assets/Cover-8.png" width="590" height="590" alt="Illustrazione di mani che reggono un telescopio, una stella e una mela verde"><span class="name" aria-hidden="true">ScienceUp</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="discosizer" style="--o:3"><a href="#p-discosizer"><img loading="lazy" src="Assets/cover-9.png" width="590" height="590" alt="Astronave bianca con la scritta Discosizer su fondo nero"><span class="name" aria-hidden="true">Discosizer</span><span class="tech">Graphic Design, Motion Graphics & Social Campaign</span><span class="style">Commercial Campaign / Social Media Design & Motion Graphics</span></a></li>
+        <li class="work" data-slug="minimi-storici" style="--o:1"><a href="#p-minimi-storici"><img loading="lazy" src="Assets/cover-10.png" width="590" height="589" alt="Minimi Storici: tre figure primitive con lance e lettering marrone su fondo giallo"><span class="name" aria-hidden="true">Minimi Storici</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="downhill" style="--o:4"><a href="#p-downhill"><img loading="lazy" src="Assets/cover-11.png" width="590" height="589" alt="Ragazzo con casco che vola su un carrello con bidone verde tra i grattacieli"><span class="name" aria-hidden="true">Downhill</span><span class="tech">Stylized Animation VisDev</span><span class="style">Type: Personal Project / Animated Feature Concept</span></a></li>
+        <li class="work" data-slug="calendar" style="--o:7"><a href="#p-calendar"><img loading="lazy" src="Assets/cover-12.png" width="590" height="589" alt="Disegno a penna di un rospo gigante trafitto da lance"><span class="name" aria-hidden="true">Calendar</span><span class="tech">Annual Calendar Illustration Series</span><span class="style">Editorial / Calendar Illustration Series & Character Design</span></a></li>
+        <li class="work" data-slug="skatepark-overpass" style="--o:9"><a href="#p-skatepark-overpass"><img loading="lazy" src="Assets/cover-13.png" width="590" height="589" alt="Sottopasso con muro a graffiti e auto verdi"><span class="name" aria-hidden="true">Skatepark Overpass</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="cheers" style="--o:13"><a href="#p-cheers"><img loading="lazy" src="Assets/cover-14.png" width="590" height="589" alt="Fiore dipinto in giallo e blu su fondo scuro"><span class="name" aria-hidden="true">Cheers!</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="card-game" style="--o:15"><a href="#p-card-game"><img loading="lazy" src="Assets/cover-16.png" width="590" height="589" alt="Figura con un'ascia su sfondo viola e la scritta Riarmo"><span class="name" aria-hidden="true">Card Game</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="descrizione" style="--o:16"><a href="#p-descrizione"><img loading="lazy" src="Assets/cover-17.png" width="590" height="589" alt="Omini con la testa bianca su fondo rosso"><span class="name" aria-hidden="true">Descrizione</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
       </ul>
+
+      <!-- pagina di dettaglio di un progetto: contenuto riempito da JS leggendo la cover cliccata (index.html#p-<slug>) -->
+      <article class="detail">
+        <a class="back" href="#strip">&larr; Torna alla galleria</a>
+        <div class="detail-info">
+          <h2 class="d-title"></h2>
+          <p class="d-desc"></p>
+          <p class="d-tech"></p>
+          <p class="d-style"></p>
+        </div>
+        <div class="detail-gallery">
+          <img class="d-img" alt="">
+        </div>
+      </article>
     </main>
 
     <img class="decor" src="Assets/VEECTORS.png" width="1920" height="235" alt="">
@@ -574,19 +689,55 @@
 
       // La vista si sceglie col selettore in alto o con l'hash: #strip, #wrap, #cluster (e #grid, #all).
       // Il selettore cambia l'hash; qui l'hash diventa la vista, con transizione se il browser la supporta.
-      var VIEWS = ['grid', 'strip', 'all', 'wrap', 'cluster'];
+      var VIEWS = ['grid', 'strip', 'all', 'list', 'cluster'];
       var switchBtns = Array.prototype.slice.call(document.querySelectorAll('.view-switch button'));
+      var lastGallery = 'strip';   // vista da cui tornare quando si esce dalla pagina di un progetto
+      var backLink = document.querySelector('.back');
+
+      // pagina di un progetto (index.html#p-<slug>): i dati vengono dalla cover stessa,
+      // non da un elenco duplicato, così titolo/tecniche/stile restano un'unica fonte.
+      var PROJECTS = {};
+      originals.forEach(function (li) {
+        var img = li.querySelector('img');
+        PROJECTS[li.dataset.slug] = {
+          title: li.querySelector('.name').textContent,
+          tech: li.querySelector('.tech').textContent,
+          style: li.querySelector('.style').textContent,
+          src: img.src,
+          alt: img.alt
+        };
+      });
+
+      function showProject(slug) {
+        var p = PROJECTS[slug];
+        if (!p) return false;
+        document.querySelector('.d-title').textContent = p.title;
+        document.querySelector('.d-desc').textContent = 'Descrizione';   // nessuna descrizione fornita per ora
+        document.querySelector('.d-tech').textContent = p.tech;
+        document.querySelector('.d-style').textContent = p.style;
+        var img = document.querySelector('.d-img');
+        img.src = p.src; img.alt = p.alt;
+        document.title = p.title + ' — Leonardo Taccone';
+        backLink.href = '#' + lastGallery;
+        return true;
+      }
 
       function applyView(v) {
         root.dataset.view = v;
         resetTiles();
         if (v === 'strip') { resetStrip(); startAuto(); } else stopAuto();
-        switchBtns.forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.view === v)); });
+        if (VIEWS.indexOf(v) !== -1) {
+          lastGallery = v;
+          switchBtns.forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.view === v)); });
+        }
       }
 
       function syncView(animate) {
         var v = location.hash.slice(1);
-        if (VIEWS.indexOf(v) === -1 || v === root.dataset.view) { applyView(root.dataset.view); return; }
+        if (v === 'wrap') v = 'list';   // alias: i link salvati con #wrap aprono l'elenco
+        var slug = v.indexOf('p-') === 0 ? v.slice(2) : null;
+        if (slug && showProject(slug)) { applyView('detail'); return; }
+        if (VIEWS.indexOf(v) === -1 || v === root.dataset.view) { applyView(root.dataset.view === 'detail' ? lastGallery : root.dataset.view); return; }
         if (animate && document.startViewTransition && !calm.matches) document.startViewTransition(function () { applyView(v); });
         else applyView(v);
       }
