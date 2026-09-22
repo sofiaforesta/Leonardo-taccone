@@ -10,7 +10,7 @@
     // scelta della versione prima del primo render: niente lampo e niente immagini scaricate a vuoto
     var v = location.hash.slice(1);
     if (v === 'wrap') v = 'list';   // alias: i link salvati con #wrap aprono l'elenco
-    if (v === 'grid' || v === 'strip' || v === 'all' || v === 'list' || v === 'cluster') document.documentElement.dataset.view = v;
+    if (v === 'grid' || v === 'strip' || v === 'all' || v === 'list' || v === 'cluster' || v === 'about') document.documentElement.dataset.view = v;
     else if (v.indexOf('p-') === 0) document.documentElement.dataset.view = 'detail';
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,6 +69,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      padding-bottom: var(--decor);   /* spazio riservato al graffito, che è "fixed" e non occupa più flusso */
     }
 
     /* ---------- header ---------- */
@@ -79,13 +80,9 @@
       padding: calc(15 * var(--w)) calc(85 * var(--w)) 0 calc(35 * var(--w));
     }
 
-    .brand {
-      margin: 0;
-      font-size: calc(128 * var(--w));
-      font-weight: 700;
-      line-height: 1;
-      text-transform: uppercase;
-    }
+    .brand { margin: 0; line-height: 0; }
+    .brand a { display: block; }
+    .brand img { display: block; width: calc(820 * var(--w)); height: auto; }
 
     .about {
       font-size: calc(40 * var(--w));
@@ -195,7 +192,9 @@
 
     .detail { display: none; }
     [data-view="detail"] .grid,
-    [data-view="detail"] .strip { display: none; }
+    [data-view="detail"] .strip,
+    [data-view="about"]  .grid,
+    [data-view="about"]  .strip { display: none; }
     [data-view="all"] .stage { padding: var(--top) 0 var(--bot); }
 
     .works { list-style: none; margin: 0; padding: 0; }
@@ -413,14 +412,19 @@
 
     /* pagina di dettaglio di un progetto (index.html#p-<slug>): due colonne, come l'elenco
        la pagina scorre in verticale, l'immagine può essere più alta di uno schermo. */
-    :root[data-view="detail"] { --u: var(--w); }
+    :root[data-view="detail"], :root[data-view="about"] { --u: var(--w); }
     [data-view="detail"] .page { height: auto; min-height: 100dvh; overflow: visible; }
+    [data-view="detail"] .stage,
+    [data-view="about"]  .stage { position: relative; }
     [data-view="detail"] .stage { display: block; padding: calc(115 * var(--u)) 0 0; }
-    [data-view="detail"] .top { padding-top: calc(29 * var(--w)); }
-    [data-view="detail"] .brand { font-size: calc(96 * var(--w)); }
-    [data-view="detail"] .view-switch { display: none; }   /* qui non ha senso cambiare "vista": è la pagina di un solo progetto */
+    [data-view="detail"] .top,
+    [data-view="about"]  .top { padding-top: calc(29 * var(--w)); }
+    [data-view="detail"] .brand img,
+    [data-view="about"]  .brand img { width: calc(620 * var(--w)); }
+    [data-view="detail"] .view-switch,
+    [data-view="about"]  .view-switch { display: none; }   /* qui non ha senso cambiare "vista": sono pagine a sé */
 
-    .detail {
+    [data-view="detail"] .detail {
       position: relative;
       display: flex;
       align-items: flex-start;
@@ -434,13 +438,29 @@
       font-size: calc(16 * var(--u));
       text-decoration: none;
     }
-    [data-view="detail"] .back {
+    [data-view="detail"] .back,
+    [data-view="about"]  .back {
       display: block;
       position: absolute;
       top: 0;
       left: calc(53 * var(--u));
     }
     .back:hover, .back:focus-visible { text-decoration: underline; }
+
+    /* pagina About (index.html#about): non ancora impaginata, solo il segnaposto centrato */
+    .about-page { display: none; }
+    [data-view="about"] .about-page {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: calc(100dvh - var(--head) - var(--decor));
+    }
+    [data-view="about"] .about-page p {
+      margin: 0;
+      color: var(--fg);
+      font-family: Inter, Helvetica, Arial, sans-serif;
+      font-size: calc(40 * var(--u));
+    }
     .detail-info {
       flex: 0 0 calc(512 * var(--u));
       display: flex;
@@ -470,10 +490,13 @@
     /* ---------- decorazione ---------- */
     .decor {
       display: block;
-      flex: none;
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      z-index: 5;
       width: 100%;
       height: auto;
-      pointer-events: none;
+      pointer-events: none;   /* resta sempre in vista, ma non ruba mai i clic al contenuto sotto */
     }
 
     /* ---------- mobile: qui la pagina scorre normalmente ---------- */
@@ -481,7 +504,7 @@
       .page { height: auto; min-height: 100dvh; }
       .decor { height: max(var(--decor), 72px); object-fit: cover; object-position: center bottom; }
       .top { padding: 16px; align-items: flex-start; gap: 16px; }
-      .brand { font-size: 13vw; }
+      .brand img { width: 58vw; }
       .about { font-size: 5.5vw; padding-top: 2vw; }
       .tools { flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
       .view-switch { font-size: 12px; }
@@ -531,12 +554,16 @@
    
       [data-view="detail"] .stage { padding: 32px 0 0; }
       [data-view="detail"] .top { padding-top: 16px; }
-      [data-view="detail"] .brand { font-size: 13vw; }
       .detail { flex-direction: column; gap: 24px; padding: 40px 16px 0; }
       .back { top: 0; left: 16px; font-size: 13px; }
       .detail-info { flex-basis: auto; width: 100%; gap: 12px; }
       .d-title { font-size: 22px; }
       .d-desc, .d-tech, .d-style { font-size: 14px; }
+   
+      [data-view="about"] .stage { padding: 32px 0 0; }
+      [data-view="about"] .top { padding-top: 16px; }
+      [data-view="about"] .about-page { height: calc(100dvh - 32px); }
+      [data-view="about"] .about-page p { font-size: 20px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -551,7 +578,7 @@
 <body>
   <div class="page">
     <header class="top">
-      <h1 class="brand">Leonardo Taccone</h1>
+      <h1 class="brand"><a href="#strip"><img src="Assets/Logotipo-LT.svg" width="491" height="52" alt="Leonardo Taccone"></a></h1>
       <div class="tools">
         <div class="view-switch" role="radiogroup" aria-label="Vista">
           <button type="button" role="radio" data-view="strip" aria-checked="true" aria-label="Striscia" title="Striscia">
@@ -599,9 +626,11 @@
         <li class="work" data-slug="descrizione" style="--o:16"><a href="#p-descrizione"><img loading="lazy" src="Assets/cover-17.png" width="590" height="589" alt="Omini con la testa bianca su fondo rosso"><span class="name" aria-hidden="true">Descrizione</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
       </ul>
 
+      <!-- link "indietro", condiviso dalla pagina di dettaglio e da About: riporta alla vista di provenienza -->
+      <a class="back" href="#strip">&larr; Torna alla galleria</a>
+
       <!-- pagina di dettaglio di un progetto: contenuto riempito da JS leggendo la cover cliccata (index.html#p-<slug>) -->
       <article class="detail">
-        <a class="back" href="#strip">&larr; Torna alla galleria</a>
         <div class="detail-info">
           <h2 class="d-title"></h2>
           <p class="d-desc"></p>
@@ -612,6 +641,11 @@
           <img class="d-img" alt="">
         </div>
       </article>
+
+      <!-- pagina About (index.html#about): non ancora impaginata, per ora solo il segnaposto richiesto -->
+      <section class="about-page">
+        <p>About me</p>
+      </section>
     </main>
 
     <img class="decor" src="Assets/VEECTORS.png" width="1920" height="235" alt="">
@@ -718,7 +752,6 @@
         var img = document.querySelector('.d-img');
         img.src = p.src; img.alt = p.alt;
         document.title = p.title + ' — Leonardo Taccone';
-        backLink.href = '#' + lastGallery;
         return true;
       }
 
@@ -729,6 +762,8 @@
         if (VIEWS.indexOf(v) !== -1) {
           lastGallery = v;
           switchBtns.forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.view === v)); });
+        } else {
+          backLink.href = '#' + lastGallery;   // pagine "foglia" (dettaglio, about): si torna alla vista di provenienza
         }
       }
 
@@ -737,7 +772,8 @@
         if (v === 'wrap') v = 'list';   // alias: i link salvati con #wrap aprono l'elenco
         var slug = v.indexOf('p-') === 0 ? v.slice(2) : null;
         if (slug && showProject(slug)) { applyView('detail'); return; }
-        if (VIEWS.indexOf(v) === -1 || v === root.dataset.view) { applyView(root.dataset.view === 'detail' ? lastGallery : root.dataset.view); return; }
+        if (v === 'about') { document.title = 'About — Leonardo Taccone'; applyView('about'); return; }
+        if (VIEWS.indexOf(v) === -1 || v === root.dataset.view) { applyView(VIEWS.indexOf(root.dataset.view) === -1 ? lastGallery : root.dataset.view); return; }
         if (animate && document.startViewTransition && !calm.matches) document.startViewTransition(function () { applyView(v); });
         else applyView(v);
       }
