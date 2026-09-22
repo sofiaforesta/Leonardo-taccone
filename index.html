@@ -431,22 +431,6 @@
       gap: calc(99 * var(--u));
       padding: calc(56 * var(--u)) calc(53 * var(--u)) 0;
     }
-    .back {
-      display: none;
-      color: var(--fg);
-      font-family: Inter, Helvetica, Arial, sans-serif;
-      font-size: calc(16 * var(--u));
-      text-decoration: none;
-    }
-    [data-view="detail"] .back,
-    [data-view="about"]  .back {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: calc(53 * var(--u));
-    }
-    .back:hover, .back:focus-visible { text-decoration: underline; }
-
     /* pagina About (index.html#about): non ancora impaginata, solo il segnaposto centrato */
     .about-page { display: none; }
     [data-view="about"] .about-page {
@@ -555,7 +539,6 @@
       [data-view="detail"] .stage { padding: 32px 0 0; }
       [data-view="detail"] .top { padding-top: 16px; }
       .detail { flex-direction: column; gap: 24px; padding: 40px 16px 0; }
-      .back { top: 0; left: 16px; font-size: 13px; }
       .detail-info { flex-basis: auto; width: 100%; gap: 12px; }
       .d-title { font-size: 22px; }
       .d-desc, .d-tech, .d-style { font-size: 14px; }
@@ -625,9 +608,6 @@
         <li class="work" data-slug="card-game" style="--o:15"><a href="#p-card-game"><img loading="lazy" src="Assets/cover-16.png" width="590" height="589" alt="Figura con un'ascia su sfondo viola e la scritta Riarmo"><span class="name" aria-hidden="true">Card Game</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
         <li class="work" data-slug="descrizione" style="--o:16"><a href="#p-descrizione"><img loading="lazy" src="Assets/cover-17.png" width="590" height="589" alt="Omini con la testa bianca su fondo rosso"><span class="name" aria-hidden="true">Descrizione</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
       </ul>
-
-      <!-- link "indietro", condiviso dalla pagina di dettaglio e da About: riporta alla vista di provenienza -->
-      <a class="back" href="#strip">&larr; Torna alla galleria</a>
 
       <!-- pagina di dettaglio di un progetto: contenuto riempito da JS leggendo la cover cliccata (index.html#p-<slug>) -->
       <article class="detail">
@@ -726,7 +706,7 @@
       var VIEWS = ['grid', 'strip', 'all', 'list', 'cluster'];
       var switchBtns = Array.prototype.slice.call(document.querySelectorAll('.view-switch button'));
       var lastGallery = 'strip';   // vista da cui tornare quando si esce dalla pagina di un progetto
-      var backLink = document.querySelector('.back');
+      var brandLink = document.querySelector('.brand a');   // il logo fa anche da pulsante "indietro"
 
       // pagina di un progetto (index.html#p-<slug>): i dati vengono dalla cover stessa,
       // non da un elenco duplicato, così titolo/tecniche/stile restano un'unica fonte.
@@ -762,9 +742,8 @@
         if (VIEWS.indexOf(v) !== -1) {
           lastGallery = v;
           switchBtns.forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.view === v)); });
-        } else {
-          backLink.href = '#' + lastGallery;   // pagine "foglia" (dettaglio, about): si torna alla vista di provenienza
         }
+        brandLink.href = '#' + lastGallery;   // il logo riporta sempre alla vista di provenienza
       }
 
       function syncView(animate) {
