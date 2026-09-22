@@ -705,8 +705,8 @@
       // Il selettore cambia l'hash; qui l'hash diventa la vista, con transizione se il browser la supporta.
       var VIEWS = ['grid', 'strip', 'all', 'list', 'cluster'];
       var switchBtns = Array.prototype.slice.call(document.querySelectorAll('.view-switch button'));
-      var lastGallery = 'strip';   // vista da cui tornare quando si esce dalla pagina di un progetto
-      var brandLink = document.querySelector('.brand a');   // il logo fa anche da pulsante "indietro"
+      var lastGallery = 'strip';   // vista a cui si torna se l'hash non è più valido, uscendo da una pagina "foglia"
+      // il logo è un link fisso alla home (#strip, la vista di apertura): niente da gestire via JS
 
       // pagina di un progetto (index.html#p-<slug>): i dati vengono dalla cover stessa,
       // non da un elenco duplicato, così titolo/tecniche/stile restano un'unica fonte.
@@ -743,7 +743,6 @@
           lastGallery = v;
           switchBtns.forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.view === v)); });
         }
-        brandLink.href = '#' + lastGallery;   // il logo riporta sempre alla vista di provenienza
       }
 
       function syncView(animate) {
