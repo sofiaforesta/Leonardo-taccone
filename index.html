@@ -210,6 +210,7 @@
       overflow: hidden;
       background: #111;
       color: var(--fg);
+      text-decoration: none;   /* altrimenti il browser sottolinea di default il testo dentro il link */
     }
     .work a:focus-visible { outline: 2px solid var(--fg); outline-offset: -6px; }
 
@@ -308,6 +309,7 @@
     [data-view="list"] .strip {
       display: flex;
       flex-direction: column;
+      gap: 0;   /* .strip di base ha 62.76u di gap per la striscia orizzontale: qui va azzerato */
       width: calc(1823 * var(--u));
       margin: 0 auto;
       padding: 0;
