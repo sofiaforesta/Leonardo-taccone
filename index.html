@@ -28,6 +28,7 @@
       --u: min(var(--w), (100dvh - var(--head) - var(--decor) - 36px) / 968);
       --bg: #000;
       --fg: #fff;
+      --accent: #ffff00;   /* giallo shock per gli hover */
       --font: "D-DIN Condensed", "DIN Condensed", "Barlow Condensed", "Arial Narrow", sans-serif;
     }
 
@@ -82,7 +83,7 @@
 
     .brand { margin: 0; line-height: 0; }
     .brand a { display: block; }
-    .brand img { display: block; width: calc(820 * var(--w)); height: auto; }
+    .brand svg { display: block; width: calc(820 * var(--w)); height: auto; }
 
     .about {
       font-size: calc(40 * var(--w));
@@ -92,8 +93,10 @@
       color: inherit;
       text-decoration: none;
     }
-    .about:hover,
-    .about:focus-visible { text-decoration: underline; text-underline-offset: 0.2em; }
+    /* hover su logo e About: giallo shock, senza sottolineatura */
+    .brand a, .about { color: var(--fg); transition: color .15s; }
+    .brand a:hover, .brand a:focus-visible,
+    .about:hover, .about:focus-visible { color: var(--accent); }
 
 
     /* ---------- selettore di vista (come la barra di Finder) ---------- */
@@ -214,7 +217,7 @@
     }
     .work a:focus-visible { outline: 2px solid var(--fg); outline-offset: -6px; }
 
-    .tech, .style { display: none; }
+    .tech, .style, .num, .cat, .roles { display: none; }
 
     /* nome del progetto: sopra la cover, allineato a sinistra, a 16px di distanza */
     .name {
@@ -300,7 +303,7 @@
     [data-view="cluster"] .work a:hover img,
     [data-view="cluster"] .work a:focus-visible img { transform: none; }
 
-    /* opzione 4 · elenco: miniatura + titolo + tecniche + stile su righe, in ordine fisso (--o).
+    /* opzione 4 · elenco: numero + miniatura + titolo - tipo di progetto + ruoli, in ordine fisso (--o).
        Qui la pagina scorre in verticale (le 16 righe non stanno in un solo schermo): --u segue
        solo la larghezza, senza il vincolo di altezza usato dalle altre viste. */
     :root[data-view="list"] { --u: var(--w); }
@@ -320,38 +323,66 @@
     [data-view="list"] .work { flex: 0 0 auto; aspect-ratio: auto; width: 100%; order: var(--o); }
     [data-view="list"] .work a {
       display: flex;
-      align-items: center;
-      gap: calc(63 * var(--u));
+      align-items: flex-start;
+      gap: calc(17 * var(--u));
       width: 100%;
       height: auto;
-      padding: calc(21 * var(--u)) 0;
+      padding: calc(8 * var(--u));
       border-bottom: 1px solid #4d4d4d;
       background: transparent;
       transition: background .15s;
     }
     [data-view="list"] .work a:hover,
     [data-view="list"] .work a:focus-visible { background: rgba(255, 255, 255, .05); }
-    [data-view="list"] .work img { flex: none; width: calc(137 * var(--u)); height: calc(137 * var(--u)); }
-    [data-view="list"] .name {
-      position: static;
-      flex: 0 0 calc(390 * var(--u));
-      opacity: 1;
-      transform: none;
-      white-space: normal;
+    [data-view="list"] .work a:hover img,
+    [data-view="list"] .work a:focus-visible img { transform: none; }
+    [data-view="list"] .work img { flex: none; order: 1; width: calc(80 * var(--u)); height: calc(80 * var(--u)); }
+    [data-view="list"] .num {
+      display: block;
+      order: 0;
+      font-family: Helvetica, Arial, sans-serif;
+      font-weight: 300;
+      font-size: calc(32 * var(--u));
+      line-height: 1.15;
+      font-variant-numeric: tabular-nums;
+    }
+    [data-view="list"] .name,
+    [data-view="list"] .cat {
+      order: 2;
+      padding-top: calc(4 * var(--u));
       font-family: Helvetica, Arial, sans-serif;
       font-weight: 300;
       font-size: calc(24 * var(--u));
-    }
-    [data-view="list"] .tech,
-    [data-view="list"] .style {
-      display: block;
-      font-family: Inter, Helvetica, Arial, sans-serif;
-      font-weight: 400;
-      font-size: calc(24 * var(--u));
+      line-height: 1.15;
       color: var(--fg);
     }
-    [data-view="list"] .tech { flex: 0 0 calc(586 * var(--u)); }
-    [data-view="list"] .style { flex: 1 1 calc(295 * var(--u)); }
+    [data-view="list"] .name {
+      position: static;
+      opacity: 1;
+      transform: none;
+      text-transform: none;
+      white-space: normal;
+    }
+    [data-view="list"] .cat { display: block; }
+    [data-view="list"] .cat::before { content: "-"; margin-right: calc(17 * var(--u)); }
+    /* ruoli: pillole allineate a destra */
+    [data-view="list"] .roles {
+      display: flex;
+      order: 3;
+      flex: none;
+      gap: calc(8 * var(--u));
+      margin-left: auto;
+      padding-left: calc(48 * var(--u));
+    }
+    [data-view="list"] .roles span {
+      padding: calc(4 * var(--u)) calc(12 * var(--u));
+      border: 1px solid var(--fg);
+      border-radius: calc(28 * var(--u));
+      font-family: Inter, Helvetica, Arial, sans-serif;
+      font-size: calc(18 * var(--u));
+      line-height: 1.2;
+      white-space: nowrap;
+    }
 
     /* opzione 5 · cover quadrate di misure diverse, a grappolo (come le app dell'Apple Watch):
        nido d'ape 5-6-5: cover +20% al centro e -30% ai lati rispetto alla misura di base,
@@ -421,17 +452,19 @@
     [data-view="detail"] .stage { display: block; padding: calc(115 * var(--u)) 0 0; }
     [data-view="detail"] .top,
     [data-view="about"]  .top { padding-top: calc(29 * var(--w)); }
-    [data-view="detail"] .brand img,
-    [data-view="about"]  .brand img { width: calc(620 * var(--w)); }
+    [data-view="detail"] .brand svg,
+    [data-view="about"]  .brand svg { width: calc(620 * var(--w)); }
     [data-view="detail"] .view-switch,
     [data-view="about"]  .view-switch { display: none; }   /* qui non ha senso cambiare "vista": sono pagine a sé */
 
+    /* design della pagina a 1440px: --k è 1px di quel design */
+    [data-view="detail"] { --k: calc(100vw / 1440); }
     [data-view="detail"] .detail {
       position: relative;
       display: flex;
       align-items: flex-start;
-      gap: calc(99 * var(--u));
-      padding: calc(56 * var(--u)) calc(53 * var(--u)) 0;
+      gap: calc(75 * var(--k));
+      padding: calc(16 * var(--k)) calc(66 * var(--k)) calc(40 * var(--k)) calc(28 * var(--k));
     }
     /* pagina About (index.html#about): non ancora impaginata, solo il segnaposto centrato */
     .about-page { display: none; }
@@ -447,31 +480,55 @@
       font-family: Inter, Helvetica, Arial, sans-serif;
       font-size: calc(40 * var(--u));
     }
+    /* colonna di testo: resta ferma mentre le immagini scorrono */
     .detail-info {
-      flex: 0 0 calc(512 * var(--u));
+      flex: 0 0 calc(389 * var(--k));
+      position: sticky;
+      top: calc(40 * var(--k));
+      max-height: calc(100dvh - 40 * var(--k) - var(--decor));
+      overflow-y: auto;
+      scrollbar-width: none;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-      gap: calc(22 * var(--u));
-    }
-    .d-title {
-      margin: 0;
+      gap: calc(32 * var(--k));
       color: var(--fg);
-      font-size: calc(42 * var(--u));
-      font-weight: 400;
       font-family: Inter, Helvetica, Arial, sans-serif;
-    }
-    .d-desc, .d-tech, .d-style {
-      margin: 0;
-      align-self: stretch;
-      color: var(--fg);
-      font-size: calc(24 * var(--u));
       font-weight: 400;
-      font-family: Inter, Helvetica, Arial, sans-serif;
-      line-height: 1.4;
+      font-size: calc(16 * var(--k));
+      line-height: 1.2;
     }
-    .detail-gallery { flex: 1 1 auto; min-width: 0; }
-    .d-img { display: block; width: 100%; height: auto; }
+    .detail-info::-webkit-scrollbar { display: none; }
+    .detail-info h2, .detail-info h3, .detail-info p,
+    .detail-info dl, .detail-info dd, .detail-info ul { margin: 0; font-weight: 400; }
+    .d-title { font-size: calc(32 * var(--k)); }
+    .d-sub, .d-deliv h3 { font-size: calc(18 * var(--k)); color: rgba(255, 255, 255, .56); }
+    .d-facts { display: flex; flex-direction: column; gap: calc(8 * var(--k)); }
+    .d-facts dt, .detail-info section:not(.d-deliv) h3 {
+      margin-bottom: calc(4 * var(--k));
+      font-size: calc(14 * var(--k));
+      opacity: .56;
+    }
+    .d-deliv h3 { margin-bottom: calc(4 * var(--k)); }
+    .d-deliv ul { padding-left: 1.3em; }
+    .detail-info [hidden] { display: none; }
+
+    /* immagini una sotto l'altra: piene in larghezza, ma mai più alte di 473/882 della colonna
+       (così un'immagine quasi quadrata resta della stessa altezza delle altre, centrata) */
+    .detail-gallery {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: calc(29 * var(--k));
+    }
+    .detail-gallery img {
+      display: block;
+      max-width: 100%;
+      max-height: calc(473 * var(--k));
+      width: auto;
+      height: auto;
+    }
 
     /* ---------- decorazione ---------- */
     .decor {
@@ -490,7 +547,7 @@
       .page { height: auto; min-height: 100dvh; }
       .decor { height: max(var(--decor), 72px); object-fit: cover; object-position: center bottom; }
       .top { padding: 16px; align-items: flex-start; gap: 16px; }
-      .brand img { width: 58vw; }
+      .brand svg { width: 58vw; }
       .about { font-size: 5.5vw; padding-top: 2vw; }
       .tools { flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
       .view-switch { font-size: 12px; }
@@ -517,16 +574,23 @@
       [data-view="list"] .stage { padding: 32px 0 0; }
       [data-view="list"] .strip { width: auto; margin: 0 16px; }
       [data-view="list"] .work { flex-basis: auto; }   /* .strip .work sopra fissa 72vw: qui la si annulla */
+      /* su telefono: numero e miniatura a sinistra, nome, tipo e ruoli uno sotto l'altro */
       [data-view="list"] .work a {
-        flex-wrap: wrap;
-        align-items: flex-start;
-        column-gap: 14px;
-        row-gap: 6px;
-        padding: 14px 0;
+        display: grid;
+        grid-template-columns: auto 56px 1fr;
+        grid-template-areas: "num img name" "num img cat" "num img roles";
+        align-content: start;
+        column-gap: 12px;
+        row-gap: 4px;
+        padding: 12px 0;
       }
-      [data-view="list"] .work img { width: 72px; height: 72px; }
-      [data-view="list"] .name { flex: 1 1 calc(100% - 86px); font-size: 15px; }
-      [data-view="list"] .tech, [data-view="list"] .style { flex: 1 1 100%; font-size: 12px; opacity: .8; }
+      [data-view="list"] .num { grid-area: num; font-size: 18px; }
+      [data-view="list"] .work img { grid-area: img; grid-row: 1 / 4; width: 56px; height: 56px; }
+      [data-view="list"] .name { grid-area: name; padding: 0; font-size: 15px; }
+      [data-view="list"] .cat { grid-area: cat; padding: 0; font-size: 13px; opacity: .8; }
+      [data-view="list"] .cat::before { content: none; }
+      [data-view="list"] .roles { grid-area: roles; flex-wrap: wrap; gap: 4px; margin: 4px 0 0; padding: 0; }
+      [data-view="list"] .roles span { padding: 2px 8px; border-radius: 14px; font-size: 11px; }
 
       [data-view="cluster"] .stage { padding: 40px 0 32px; }
       [data-view="cluster"] .strip {
@@ -540,10 +604,14 @@
    
       [data-view="detail"] .stage { padding: 32px 0 0; }
       [data-view="detail"] .top { padding-top: 16px; }
-      .detail { flex-direction: column; gap: 24px; padding: 40px 16px 0; }
-      .detail-info { flex-basis: auto; width: 100%; gap: 12px; }
-      .d-title { font-size: 22px; }
-      .d-desc, .d-tech, .d-style { font-size: 14px; }
+      .detail { flex-direction: column; gap: 32px; padding: 40px 16px 24px; }
+      .detail-info { position: static; flex-basis: auto; width: 100%; max-height: none; gap: 24px; font-size: 15px; }
+      .d-title { font-size: 26px; }
+      .d-sub, .d-deliv h3 { font-size: 16px; }
+      .d-facts { gap: 8px; }
+      .d-facts dt, .detail-info section:not(.d-deliv) h3 { margin-bottom: 2px; font-size: 13px; }
+      .detail-gallery { gap: 16px; }
+      .detail-gallery img { max-height: none; }
    
       [data-view="about"] .stage { padding: 32px 0 0; }
       [data-view="about"] .top { padding-top: 16px; }
@@ -563,7 +631,7 @@
 <body>
   <div class="page">
     <header class="top">
-      <h1 class="brand"><a href="#strip"><img src="Assets/Logotipo-LT.svg" width="491" height="52" alt="Leonardo Taccone"></a></h1>
+      <h1 class="brand"><a href="#strip"><svg viewBox="0 0 491 52" fill="currentColor" role="img" aria-label="Leonardo Taccone"> <path d="M476.517 8.81769V21.4248H488.177V29.4408H476.517V42.9952H490.072V51.0113H467.627V0.72876H490.072V8.81769H476.517Z" /> <path d="M461.532 0.72876V51.0113H452.569L442.075 24.1939V51.0113H433.112V0.72876H442.075L452.569 28.7121V0.72876H461.532Z" /> <path d="M402.521 47.9506C399.971 45.4729 398.732 41.9021 398.732 37.1653V14.5018C398.732 9.76501 400.044 6.19422 402.74 3.71653C405.363 1.23885 408.934 0 413.307 0C417.533 0 420.885 1.23885 423.436 3.71653C425.987 6.19422 427.298 9.76501 427.298 14.5018V37.1653C427.298 41.8292 425.914 45.4 423.217 47.8777C420.521 50.3554 417.023 51.5942 412.796 51.5942C408.424 51.5942 404.999 50.4283 402.521 47.9506ZM416.95 41.6106C417.825 40.2989 418.335 38.4771 418.335 36.1451V15.9592C418.335 13.4087 417.898 11.4411 417.023 10.1294C416.149 8.81766 414.837 8.08893 413.088 8.08893C411.193 8.08893 409.809 8.74479 408.934 10.0565C408.06 11.3682 407.695 13.3358 407.695 15.9592V36.1451C407.695 41.1005 409.444 43.5053 413.088 43.5053C414.764 43.5053 416.076 42.9223 416.95 41.6106Z" /> <path d="M368.433 47.9506C365.883 45.4729 364.644 41.9021 364.644 37.1653V14.5018C364.644 9.76501 365.956 6.19422 368.652 3.71653C371.275 1.23885 374.846 0 379.218 0C383.372 0 386.724 1.23885 389.348 3.64366C391.898 6.12135 393.21 9.76501 393.21 14.7204V16.2507H384.247V14.7933C384.247 12.5342 383.737 10.8581 382.789 9.76501C381.842 8.67191 380.603 8.08893 379 8.08893C377.105 8.08893 375.721 8.74479 374.846 10.0565C373.972 11.3682 373.607 13.3358 373.607 15.9592V36.1451C373.607 41.1005 375.356 43.5053 379 43.5053C380.603 43.5053 381.842 42.9952 382.789 41.8292C383.737 40.7361 384.247 39.06 384.247 36.8738V35.5621H393.137V36.9467C393.137 41.8292 391.753 45.4729 389.056 47.9506C386.36 50.4283 382.935 51.5942 378.708 51.5942C374.336 51.5942 370.911 50.4283 368.433 47.9506Z" /> <path d="M334.345 47.9506C331.795 45.4729 330.556 41.9021 330.556 37.1653V14.5018C330.556 9.76501 331.867 6.19422 334.564 3.71653C337.187 1.23885 340.758 0 345.13 0C349.284 0 352.636 1.23885 355.26 3.64366C357.81 6.12135 359.122 9.76501 359.122 14.7204V16.2507H350.159V14.7933C350.159 12.5342 349.648 10.8581 348.701 9.76501C347.754 8.67191 346.515 8.08893 344.912 8.08893C343.017 8.08893 341.632 8.74479 340.758 10.0565C339.883 11.3682 339.519 13.3358 339.519 15.9592V36.1451C339.519 41.1005 341.268 43.5053 344.912 43.5053C346.515 43.5053 347.754 42.9952 348.701 41.8292C349.648 40.7361 350.159 39.06 350.159 36.8738V35.5621H359.049V36.9467C359.049 41.8292 357.664 45.4729 354.968 47.9506C352.272 50.4283 348.847 51.5942 344.62 51.5942C340.248 51.5942 336.823 50.4283 334.345 47.9506Z" /> <path d="M316.382 41.2463H304.65L302.609 51.0113H293.281L306.18 0.72876H314.925L327.751 51.0113H318.423L316.382 41.2463ZM314.779 33.2302L310.552 12.8257L306.326 33.2302H314.779Z" /> <path d="M295.674 8.81769H287.002V51.0113H278.111V8.81769H269.366V0.72876H295.674V8.81769Z" /> <path d="M228.807 47.9506C226.256 45.4729 225.018 41.9021 225.018 37.1653V14.5018C225.018 9.76501 226.329 6.19422 229.026 3.71653C231.649 1.23885 235.22 0 239.592 0C243.819 0 247.171 1.23885 249.722 3.71653C252.272 6.19422 253.584 9.76501 253.584 14.5018V37.1653C253.584 41.8292 252.199 45.4 249.503 47.8777C246.807 50.3554 243.309 51.5942 239.082 51.5942C234.71 51.5942 231.285 50.4283 228.807 47.9506ZM243.236 41.6106C244.11 40.2989 244.62 38.4771 244.62 36.1451V15.9592C244.62 13.4087 244.183 11.4411 243.309 10.1294C242.434 8.81766 241.123 8.08893 239.374 8.08893C237.479 8.08893 236.094 8.74479 235.22 10.0565C234.345 11.3682 233.981 13.3358 233.981 15.9592V36.1451C233.981 41.1005 235.73 43.5053 239.374 43.5053C241.05 43.5053 242.361 42.9223 243.236 41.6106Z" /> <path d="M191.577 0.72876H205.495C209.722 0.72876 213.074 1.96761 215.625 4.37242C218.175 6.85011 219.487 10.4209 219.487 15.1577V36.5824C219.487 41.3191 218.103 44.8899 215.479 47.3676C212.783 49.8453 209.285 51.0113 205.058 51.0113H191.577V0.72876ZM205.277 42.9952C206.953 42.9952 208.265 42.3394 209.139 41.0276C210.014 39.7159 210.524 37.8941 210.524 35.5622V16.688C210.524 14.1374 210.086 12.1699 209.212 10.8581C208.337 9.54642 207.026 8.81769 205.277 8.81769H200.467V42.9952H205.277Z" /> <path d="M171.321 30.8254H167.021V51.0113H158.058V0.72876H171.758C176.713 0.72876 180.211 1.96761 182.252 4.29955C184.292 6.70436 185.385 10.4938 185.385 15.7406C185.385 19.0928 184.875 21.9349 184.001 24.1211C183.053 26.3801 181.523 28.0562 179.483 29.1493L186.989 51.0113H177.661L171.321 30.8254ZM167.021 22.8093H171.685C173.434 22.8093 174.673 22.2264 175.402 21.0604C176.058 19.8944 176.422 18.0726 176.422 15.7406C176.422 13.4087 176.058 11.6597 175.402 10.4938C174.746 9.3278 173.507 8.74481 171.685 8.74481H167.021V22.8093Z" /> <path d="M143.166 41.2463H131.434L129.393 51.0113H120.065L132.964 0.72876H141.709L154.534 51.0113H145.207L143.166 41.2463ZM141.563 33.2302L137.336 12.8257L133.11 33.2302H141.563Z" /> <path d="M116.594 0.72876V51.0113H107.631L97.137 24.1939V51.0113H88.1736V0.72876H97.137L107.631 28.7121V0.72876H116.594Z" /> <path d="M57.5834 47.9506C55.0328 45.4729 53.7939 41.9021 53.7939 37.1653V14.5018C53.7939 9.76501 55.1057 6.19422 57.802 3.71653C60.4254 1.23885 63.9962 0 68.3686 0C72.5952 0 75.9474 1.23885 78.498 3.71653C81.0485 6.19422 82.3602 9.76501 82.3602 14.5018V37.1653C82.3602 41.8292 80.9757 45.4 78.2793 47.8777C75.583 50.3554 72.0851 51.5942 67.8585 51.5942C63.4861 51.5942 60.061 50.4283 57.5834 47.9506ZM72.0123 41.6106C72.8867 40.2989 73.3968 38.4771 73.3968 36.1451V15.9592C73.3968 13.4087 72.9596 11.4411 72.0851 10.1294C71.2106 8.81766 69.8989 8.08893 68.15 8.08893C66.2553 8.08893 64.8707 8.74479 63.9962 10.0565C63.1217 11.3682 62.7574 13.3358 62.7574 15.9592V36.1451C62.7574 41.1005 64.5063 43.5053 68.15 43.5053C69.8261 43.5053 71.1378 42.9223 72.0123 41.6106Z" /> <path d="M35.6486 8.81769V21.4248H47.3083V29.4408H35.6486V42.9952H49.203V51.0113H26.7581V0.72876H49.203V8.81769H35.6486Z" /> <path d="M0 0.72876H8.9634V42.9952H22.445V51.0113H0V0.72876Z" /> </svg></a></h1>
       <div class="tools">
         <div class="view-switch" role="radiogroup" aria-label="Vista">
           <button type="button" role="radio" data-view="strip" aria-checked="true" aria-label="Striscia" title="Striscia">
@@ -584,44 +652,50 @@
       <!-- Opzione 1: griglia (apri con index.html oppure index.html#grid) -->
       <ul class="works grid">
         <li class="work" data-slug="minimi-storici"><a href="#p-minimi-storici"><img src="Assets/cover-10.png" width="590" height="589" alt="Minimi Storici: tre figure primitive con lance e lettering marrone su fondo giallo"><span class="name" aria-hidden="true">Minimi Storici</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
-        <li class="work" data-slug="discosizer"><a href="#p-discosizer"><img src="Assets/cover-9.png" width="590" height="590" alt="Astronave bianca con la scritta Discosizer su fondo nero"><span class="name" aria-hidden="true">Discosizer</span><span class="tech">Graphic Design, Motion Graphics & Social Campaign</span><span class="style">Commercial Campaign / Social Media Design & Motion Graphics</span></a></li>
-        <li class="work" data-slug="scienceup"><a href="#p-scienceup"><img src="Assets/Cover-8.png" width="590" height="590" alt="Illustrazione di mani che reggono un telescopio, una stella e una mela verde"><span class="name" aria-hidden="true">ScienceUp</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="discosizer"><a href="#p-discosizer"><img src="Assets/cover-9.png" width="590" height="590" alt="Astronave bianca con la scritta Discosizer su fondo nero"><span class="name" aria-hidden="true">DISCOSIZER</span><span class="tech">Graphic Design, Motion Graphics & Social Campaign</span><span class="style">Commercial Campaign / Social Media Design & Motion Graphics</span></a></li>
+        <li class="work" data-slug="scienceup"><a href="#p-scienceup"><img src="Assets/Cover-8.png" width="590" height="590" alt="Illustrazione di mani che reggono un telescopio, una stella e una mela verde"><span class="name" aria-hidden="true">ScienceUP</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
         <li class="work" data-slug="downhill"><a href="#p-downhill"><img src="Assets/cover-11.png" width="590" height="589" alt="Ragazzo con casco che vola su un carrello con bidone verde tra i grattacieli"><span class="name" aria-hidden="true">Downhill</span><span class="tech">Stylized Animation VisDev</span><span class="style">Type: Personal Project / Animated Feature Concept</span></a></li>
         <li class="work" data-slug="calendar"><a href="#p-calendar"><img src="Assets/cover-12.png" width="590" height="589" alt="Disegno a penna di un rospo gigante trafitto da lance"><span class="name" aria-hidden="true">Calendar</span><span class="tech">Annual Calendar Illustration Series</span><span class="style">Editorial / Calendar Illustration Series & Character Design</span></a></li>
-        <li class="work" data-slug="ex-calibur"><a href="#p-ex-calibur"><img src="Assets/cover-7.png" width="590" height="589" alt="Veicolo scuro su un prato con la scritta EX-CA"><span class="name" aria-hidden="true">Ex-Calibur</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="ex-calibur"><a href="#p-ex-calibur"><img src="Assets/cover-7.png" width="590" height="589" alt="Veicolo scuro su un prato con la scritta EX-CA"><span class="name" aria-hidden="true">EX-CALIBUR</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
       </ul>
 
       <!-- Opzione 1, versione 2: striscia scorrevole (index.html#strip) -->
       <ul class="works strip">
-        <li class="work" data-slug="sipario" style="--o:12"><a href="#p-sipario"><img src="Assets/Cover-1.png" width="590" height="589" alt="Furgone verde acqua Atomic Express su una strada di campagna"><span class="name" aria-hidden="true">Sipario</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
-        <li class="work" data-slug="centauri" style="--o:14"><a href="#p-centauri"><img src="Assets/cover-2.png" width="590" height="589" alt="Dettaglio di un dispositivo sci-fi con ottiche gemelle e clip arancione"><span class="name" aria-hidden="true">Centauri</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
-        <li class="work" data-slug="railgun-turret" style="--o:5"><a href="#p-railgun-turret"><img src="Assets/cover-3.png" width="590" height="589" alt="Veicolo corazzato bianco con cannone, in rendering 3D"><span class="name" aria-hidden="true">Long Distance Railgun Heavy Duty Mobile Turret</span><span class="tech">Tecniche</span><span class="style">Personal IP / Sci-Fi Character & Vehicle Design</span></a></li>
-        <li class="work" data-slug="floating-settlement" style="--o:6"><a href="#p-floating-settlement"><img src="Assets/cover-4.png" width="587" height="587" alt="Barca-casa galleggiante su acqua verde, vista dall'alto"><span class="name" aria-hidden="true">Floating Settlement</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
-        <li class="work" data-slug="desert-city-settlement" style="--o:8"><a href="#p-desert-city-settlement"><img loading="lazy" src="Assets/cover-5.png" width="590" height="589" alt="Torre cilindrica in un mercato desertico attraversato da teli e cavi"><span class="name" aria-hidden="true">Desert City Settlement</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
-        <li class="work" data-slug="fisherman-bioluminescent" style="--o:10"><a href="#p-fisherman-bioluminescent"><img loading="lazy" src="Assets/cover-6.png" width="590" height="589" alt="Personaggio dalla pelle blu con un secchio luminescente, con note di character design"><span class="name" aria-hidden="true">The Fisherman & the Bioluminescent Creatures</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
-        <li class="work" data-slug="ex-calibur" style="--o:11"><a href="#p-ex-calibur"><img loading="lazy" src="Assets/cover-7.png" width="590" height="589" alt="Veicolo scuro su un prato con la scritta EX-CA"><span class="name" aria-hidden="true">Ex-Calibur</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
-        <li class="work" data-slug="scienceup" style="--o:2"><a href="#p-scienceup"><img loading="lazy" src="Assets/Cover-8.png" width="590" height="590" alt="Illustrazione di mani che reggono un telescopio, una stella e una mela verde"><span class="name" aria-hidden="true">ScienceUp</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
-        <li class="work" data-slug="discosizer" style="--o:3"><a href="#p-discosizer"><img loading="lazy" src="Assets/cover-9.png" width="590" height="590" alt="Astronave bianca con la scritta Discosizer su fondo nero"><span class="name" aria-hidden="true">Discosizer</span><span class="tech">Graphic Design, Motion Graphics & Social Campaign</span><span class="style">Commercial Campaign / Social Media Design & Motion Graphics</span></a></li>
-        <li class="work" data-slug="minimi-storici" style="--o:1"><a href="#p-minimi-storici"><img loading="lazy" src="Assets/cover-10.png" width="590" height="589" alt="Minimi Storici: tre figure primitive con lance e lettering marrone su fondo giallo"><span class="name" aria-hidden="true">Minimi Storici</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
-        <li class="work" data-slug="downhill" style="--o:4"><a href="#p-downhill"><img loading="lazy" src="Assets/cover-11.png" width="590" height="589" alt="Ragazzo con casco che vola su un carrello con bidone verde tra i grattacieli"><span class="name" aria-hidden="true">Downhill</span><span class="tech">Stylized Animation VisDev</span><span class="style">Type: Personal Project / Animated Feature Concept</span></a></li>
-        <li class="work" data-slug="calendar" style="--o:7"><a href="#p-calendar"><img loading="lazy" src="Assets/cover-12.png" width="590" height="589" alt="Disegno a penna di un rospo gigante trafitto da lance"><span class="name" aria-hidden="true">Calendar</span><span class="tech">Annual Calendar Illustration Series</span><span class="style">Editorial / Calendar Illustration Series & Character Design</span></a></li>
-        <li class="work" data-slug="skatepark-overpass" style="--o:9"><a href="#p-skatepark-overpass"><img loading="lazy" src="Assets/cover-13.png" width="590" height="589" alt="Sottopasso con muro a graffiti e auto verdi"><span class="name" aria-hidden="true">Skatepark Overpass</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
-        <li class="work" data-slug="cheers" style="--o:13"><a href="#p-cheers"><img loading="lazy" src="Assets/cover-14.png" width="590" height="589" alt="Fiore dipinto in giallo e blu su fondo scuro"><span class="name" aria-hidden="true">Cheers!</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
-        <li class="work" data-slug="card-game" style="--o:15"><a href="#p-card-game"><img loading="lazy" src="Assets/cover-16.png" width="590" height="589" alt="Figura con un'ascia su sfondo viola e la scritta Riarmo"><span class="name" aria-hidden="true">Card Game</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
-        <li class="work" data-slug="descrizione" style="--o:16"><a href="#p-descrizione"><img loading="lazy" src="Assets/cover-17.png" width="590" height="589" alt="Omini con la testa bianca su fondo rosso"><span class="name" aria-hidden="true">Descrizione</span><span class="tech">Tecniche</span><span class="style">stile</span></a></li>
+        <li class="work" data-slug="cheers" style="--o:12"><a href="#p-cheers"><img src="Assets/Cover-1.png" width="590" height="589" alt="Furgone verde acqua Atomic Express su una strada di campagna"><span class="name" aria-hidden="true">CHEERS!</span><span class="tech">Tecniche</span><span class="style">stile</span><span class="num">12</span><span class="cat">Visual Development for Animation</span><span class="roles"><span>Visual Development Artist</span><span>Background Painter</span></span></a></li>
+        <li class="work" data-slug="centauri" style="--o:14"><a href="#p-centauri"><img src="Assets/cover-2.png" width="590" height="589" alt="Dettaglio di un dispositivo sci-fi con ottiche gemelle e clip arancione"><span class="name" aria-hidden="true">Centauri</span><span class="tech">Tecniche</span><span class="style">stile</span><span class="num">14</span><span class="cat">Character Concept Art</span><span class="roles"><span>Character Concept Artist</span><span>Visual Development Artist</span></span></a></li>
+        <li class="work" data-slug="railgun-turret" style="--o:5"><a href="#p-railgun-turret"><img src="Assets/cover-3.png" width="590" height="589" alt="Veicolo corazzato bianco con cannone, in rendering 3D"><span class="name" aria-hidden="true">Long distance railgun heavy duty mobile turret</span><span class="tech">Tecniche</span><span class="style">Personal IP / Sci-Fi Character & Vehicle Design</span><span class="num">05</span><span class="cat">Concept Design</span><span class="roles"><span>Hard Surface Concept Art</span><span>Vehicle Design</span></span></a></li>
+        <li class="work" data-slug="floating-settlement" style="--o:10"><a href="#p-floating-settlement"><img src="Assets/cover-4.png" width="587" height="587" alt="Barca-casa galleggiante su acqua verde, vista dall'alto"><span class="name" aria-hidden="true">Floating Settlement</span><span class="tech">Tecniche</span><span class="style">stile</span><span class="num">10</span></a></li>
+        <li class="work" data-slug="desert-city-settlement" style="--o:7"><a href="#p-desert-city-settlement"><img loading="lazy" src="Assets/cover-5.png" width="590" height="589" alt="Torre cilindrica in un mercato desertico attraversato da teli e cavi"><span class="name" aria-hidden="true">Desert city settlement</span><span class="tech">Tecniche</span><span class="style">stile</span><span class="num">07</span><span class="cat">Environment Concept Art &amp; Worldbuilding</span><span class="roles"><span>Environment Concept Artist</span><span>Worldbuilder</span></span></a></li>
+        <li class="work" data-slug="fisherman-bioluminescent" style="--o:9"><a href="#p-fisherman-bioluminescent"><img loading="lazy" src="Assets/cover-6.png" width="590" height="589" alt="Personaggio dalla pelle blu con un secchio luminescente, con note di character design"><span class="name" aria-hidden="true">The fisherman &amp; the bioluminescent creatures</span><span class="tech">Tecniche</span><span class="style">stile</span><span class="num">09</span><span class="cat">Character &amp; Creature Concept Art</span><span class="roles"><span>Character &amp; Prop Concept Artist</span></span></a></li>
+        <li class="work" data-slug="ex-calibur" style="--o:11"><a href="#p-ex-calibur"><img loading="lazy" src="Assets/cover-7.png" width="590" height="589" alt="Veicolo scuro su un prato con la scritta EX-CA"><span class="name" aria-hidden="true">EX-CALIBUR</span><span class="tech">Tecniche</span><span class="style">stile</span><span class="num">11</span><span class="cat">Hard Surface Concept Art &amp; Graphic IP</span><span class="roles"><span>Hard Surface Concept Artist</span><span>Graphic Designer</span></span></a></li>
+        <li class="work" data-slug="scienceup" style="--o:2"><a href="#p-scienceup"><img loading="lazy" src="Assets/Cover-8.png" width="590" height="590" alt="Illustrazione di mani che reggono un telescopio, una stella e una mela verde"><span class="name" aria-hidden="true">ScienceUP</span><span class="tech">Tecniche</span><span class="style">stile</span><span class="num">02</span><span class="cat">Web Illustrations</span><span class="roles"><span>Illustrator</span><span>Visual Communicator</span></span></a></li>
+        <li class="work" data-slug="discosizer" style="--o:3"><a href="#p-discosizer"><img loading="lazy" src="Assets/cover-9.png" width="590" height="590" alt="Astronave bianca con la scritta Discosizer su fondo nero"><span class="name" aria-hidden="true">DISCOSIZER</span><span class="tech">Graphic Design, Motion Graphics & Social Campaign</span><span class="style">Commercial Campaign / Social Media Design & Motion Graphics</span><span class="num">03</span><span class="cat">Web Illustrations</span><span class="roles"><span>Graphic Designer</span><span>Motion Artist</span></span></a></li>
+        <li class="work" data-slug="minimi-storici" style="--o:1"><a href="#p-minimi-storici"><img loading="lazy" src="Assets/cover-10.png" width="590" height="589" alt="Minimi Storici: tre figure primitive con lance e lettering marrone su fondo giallo"><span class="name" aria-hidden="true">Minimi Storici</span><span class="tech">Tecniche</span><span class="style">stile</span><span class="num">01</span><span class="cat">Brand Identity &amp; Motion Design</span><span class="roles"><span>Brand Designer</span><span>Motion Graphics Artist</span></span></a></li>
+        <li class="work" data-slug="downhill" style="--o:4"><a href="#p-downhill"><img loading="lazy" src="Assets/cover-11.png" width="590" height="589" alt="Ragazzo con casco che vola su un carrello con bidone verde tra i grattacieli"><span class="name" aria-hidden="true">Downhill</span><span class="tech">Stylized Animation VisDev</span><span class="style">Type: Personal Project / Animated Feature Concept</span><span class="num">04</span><span class="cat">Animation VisDev</span><span class="roles"><span>Visual Development Artist</span><span>Character &amp; Prop Designer</span></span></a></li>
+        <li class="work" data-slug="calendar" style="--o:6"><a href="#p-calendar"><img loading="lazy" src="Assets/cover-12.png" width="590" height="589" alt="Disegno a penna di un rospo gigante trafitto da lance"><span class="name" aria-hidden="true">Calendar</span><span class="tech">Annual Calendar Illustration Series</span><span class="style">Editorial / Calendar Illustration Series & Character Design</span><span class="num">06</span><span class="cat">Editorial Illustration &amp; Character Design</span><span class="roles"><span>Illustrator</span><span>Character Designer</span></span></a></li>
+        <li class="work" data-slug="skatepark-overpass" style="--o:8"><a href="#p-skatepark-overpass"><img loading="lazy" src="Assets/cover-13.png" width="590" height="589" alt="Sottopasso con muro a graffiti e auto verdi"><span class="name" aria-hidden="true">Skatepark Overpass</span><span class="tech">Tecniche</span><span class="style">stile</span><span class="num">08</span><span class="cat">Animation Background Design</span><span class="roles"><span>Background Painter</span><span>Environment Artist</span></span></a></li>
+        <li class="work" data-slug="sipario" style="--o:13"><a href="#p-sipario"><img loading="lazy" src="Assets/cover-14.png" width="590" height="589" alt="Fiore dipinto in giallo e blu su fondo scuro"><span class="name" aria-hidden="true">Sipario</span><span class="tech">Tecniche</span><span class="style">stile</span><span class="num">13</span><span class="cat">Music Packaging &amp; Graphic Design</span><span class="roles"><span>Graphic Designer</span><span>Art Director</span></span></a></li>
+        <li class="work" data-slug="card-game" style="--o:15"><a href="#p-card-game"><img loading="lazy" src="Assets/cover-16.png" width="590" height="589" alt="Figura con un'ascia su sfondo viola e la scritta Riarmo"><span class="name" aria-hidden="true">Card Game</span><span class="tech">Tecniche</span><span class="style">stile</span><span class="num">15</span><span class="cat">Card Game Art &amp; Graphic Design</span><span class="roles"><span>Game Illustrator</span><span>Graphic Designer</span></span></a></li>
+        <li class="work" data-slug="wiip" style="--o:16"><a href="#p-wiip"><img loading="lazy" src="Assets/cover-17.png" width="590" height="589" alt="Omini con la testa bianca su fondo rosso"><span class="name" aria-hidden="true">WIIP</span><span class="tech">Tecniche</span><span class="style">stile</span><span class="num">16</span><span class="cat">Environment Concept Art &amp; Asset Design</span><span class="roles"><span>Environment Concept Artist</span></span></a></li>
       </ul>
 
       <!-- pagina di dettaglio di un progetto: contenuto riempito da JS leggendo la cover cliccata (index.html#p-<slug>) -->
       <article class="detail">
         <div class="detail-info">
-          <h2 class="d-title"></h2>
-          <p class="d-desc"></p>
-          <p class="d-tech"></p>
-          <p class="d-style"></p>
+          <header>
+            <h2 class="d-title"></h2>
+            <p class="d-sub"></p>
+          </header>
+          <dl class="d-facts">
+            <div data-f="category"><dt>Category</dt><dd></dd></div>
+            <div data-f="role"><dt>Role</dt><dd></dd></div>
+            <div data-f="tools"><dt>Tools</dt><dd></dd></div>
+          </dl>
+          <section data-f="overview"><h3>Project Overview</h3><p></p></section>
+          <section data-f="process"><h3>My Process &amp; Pipeline</h3><p></p></section>
+          <section data-f="deliverables" class="d-deliv"><h3>Key Deliverables:</h3><ul></ul></section>
         </div>
-        <div class="detail-gallery">
-          <img class="d-img" alt="">
-        </div>
+        <div class="detail-gallery"></div>
       </article>
 
       <!-- pagina About (index.html#about): non ancora impaginata, per ora solo il segnaposto richiesto -->
@@ -633,6 +707,7 @@
     <img class="decor" src="Assets/VEECTORS.png" width="1920" height="235" alt="">
   </div>
 
+  <script src="progetti.js"></script>
   <script>
     (function () {
       var root = document.documentElement;
@@ -710,30 +785,55 @@
       var lastGallery = 'strip';   // vista a cui si torna se l'hash non è più valido, uscendo da una pagina "foglia"
       // il logo è un link fisso alla home (#strip, la vista di apertura): niente da gestire via JS
 
-      // pagina di un progetto (index.html#p-<slug>): i dati vengono dalla cover stessa,
-      // non da un elenco duplicato, così titolo/tecniche/stile restano un'unica fonte.
+      // pagina di un progetto (index.html#p-<slug>): nome, category e ruoli vengono dalla riga
+      // dell'elenco, non da una copia, così restano un'unica fonte.
       var PROJECTS = {};
       originals.forEach(function (li) {
         var img = li.querySelector('img');
         PROJECTS[li.dataset.slug] = {
           title: li.querySelector('.name').textContent,
-          tech: li.querySelector('.tech').textContent,
-          style: li.querySelector('.style').textContent,
-          src: img.src,
-          alt: img.alt
+          category: (li.querySelector('.cat') || {}).textContent || '',
+          roles: Array.prototype.map.call(li.querySelectorAll('.roles span'), function (r) { return r.textContent; }),
+          src: img.getAttribute('src')
         };
       });
 
+      // pagina di dettaglio: un solo template per tutti i progetti. Nome, category e role arrivano
+      // dall'elenco; il resto (testi e immagini) da progetti.js. Le sezioni senza dati si nascondono.
+      var detail = document.querySelector('.detail');
+      function setField(f, text) {
+        var box = detail.querySelector('[data-f="' + f + '"]');
+        box.hidden = !text;
+        box.querySelector('dd, p').textContent = text || '';
+      }
       function showProject(slug) {
         var p = PROJECTS[slug];
         if (!p) return false;
-        document.querySelector('.d-title').textContent = p.title;
-        document.querySelector('.d-desc').textContent = 'Descrizione';   // nessuna descrizione fornita per ora
-        document.querySelector('.d-tech').textContent = p.tech;
-        document.querySelector('.d-style').textContent = p.style;
-        var img = document.querySelector('.d-img');
-        img.src = p.src; img.alt = p.alt;
+        var d = (window.PROGETTI || {})[slug] || {};
+        detail.querySelector('.d-title').textContent = p.title;
+        var sub = detail.querySelector('.d-sub');
+        sub.textContent = d.subtitle || ''; sub.hidden = !d.subtitle;
+        setField('category', d.category || p.category);
+        setField('role', d.role || p.roles.join(' & '));
+        setField('tools', d.tools);
+        setField('overview', d.overview);
+        setField('process', d.process);
+        var list = d.deliverables || [];
+        var ul = detail.querySelector('.d-deliv ul');
+        ul.textContent = '';
+        list.forEach(function (t) { var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+        detail.querySelector('.d-deliv').hidden = !list.length;
+        var gallery = detail.querySelector('.detail-gallery');
+        gallery.textContent = '';
+        (d.images || [p.src]).forEach(function (src, i) {
+          var img = document.createElement('img');
+          img.src = src;
+          img.alt = p.title + ' — immagine ' + (i + 1);
+          if (i > 1) img.loading = 'lazy';
+          gallery.appendChild(img);
+        });
         document.title = p.title + ' — Leonardo Taccone';
+        window.scrollTo(0, 0);
         return true;
       }
 
@@ -748,6 +848,8 @@
       }
 
       function syncView(animate) {
+        // pagine generate da build.js (/progetti/<slug>): mostrano sempre il loro progetto
+        if (root.dataset.page && showProject(root.dataset.page)) { applyView('detail'); return; }
         var v = location.hash.slice(1);
         if (v === 'wrap') v = 'list';   // alias: i link salvati con #wrap aprono l'elenco
         var slug = v.indexOf('p-') === 0 ? v.slice(2) : null;
