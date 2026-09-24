@@ -46,7 +46,7 @@ for (const [, slug, cover, nameHtml, catHtml] of src.matchAll(rowRe)) {
     '<meta property="og:type" content="article">',
     '<meta property="og:title" content="' + esc(title) + '">',
     '<meta property="og:description" content="' + esc(desc) + '">',
-    '<meta property="og:image" content="' + SITE + '/' + image + '">',
+    '<meta property="og:image" content="' + SITE + '/' + encodeURI(image) + '">',
     SITE ? '<meta property="og:url" content="' + url + '">' : '',
   ].filter(Boolean).join('\n  ');
   const page = src

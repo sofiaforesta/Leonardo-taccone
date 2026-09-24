@@ -529,6 +529,13 @@
       width: auto;
       height: auto;
     }
+    /* progetti con "columns" (es. le carte di Card Game): griglia a N colonne, poi a capo */
+    .detail-gallery.grid {
+      display: grid;
+      grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+      align-items: start;
+    }
+    .detail-gallery.grid img { width: 100%; max-height: none; }
 
     /* ---------- decorazione ---------- */
     .decor {
@@ -612,6 +619,7 @@
       .d-facts dt, .detail-info section:not(.d-deliv) h3 { margin-bottom: 2px; font-size: 13px; }
       .detail-gallery { gap: 16px; }
       .detail-gallery img { max-height: none; }
+      .detail-gallery.grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
    
       [data-view="about"] .stage { padding: 32px 0 0; }
       [data-view="about"] .top { padding-top: 16px; }
@@ -825,6 +833,8 @@
         detail.querySelector('.d-deliv').hidden = !list.length;
         var gallery = detail.querySelector('.detail-gallery');
         gallery.textContent = '';
+        gallery.classList.toggle('grid', !!d.columns);
+        gallery.style.setProperty('--cols', d.columns || '');
         (d.images || [p.src]).forEach(function (src, i) {
           var img = document.createElement('img');
           img.src = src;
