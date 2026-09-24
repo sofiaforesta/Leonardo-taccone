@@ -11,6 +11,7 @@
 //   process       My Process & Pipeline
 //   deliverables  elenco puntato di Key Deliverables
 //   images        immagini della colonna di destra, dall'alto in basso
+//                 (un gruppo tra [ ] = immagini attaccate, una sotto l'altra senza spazio)
 //   columns       immagini affiancate in griglia, N per riga (es. 4); senza, una sotto l'altra
 window.PROGETTI = {
   'minimi-storici': {
@@ -44,6 +45,15 @@ window.PROGETTI = {
       'High-Resolution Digital Editorial Illustrations',
       'Educational Character Concepts & Visual Diagrams',
       'Layout Adaptation for Print and Digital Publications'
+    ],
+    images: [
+      'Assets/01-ScienceUP.webp',
+      'Assets/02-ScienceUP (1).webp',
+      'Assets/03-ScienceUP.webp',
+      'Assets/04-SUP.webp',
+      'Assets/05-SUP.webp',
+      'Assets/06-SUP.webp',
+      ['Assets/07a-SUP.webp', 'Assets/07b-SUP.webp']
     ]
   },
   'discosizer': {

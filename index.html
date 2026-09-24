@@ -297,7 +297,7 @@
     [data-view="all"] .work:hover,
     [data-view="all"] .work:has(a:focus-visible),
     [data-view="cluster"] .work:hover,
-    [data-view="cluster"] .work:has(a:focus-visible) { transform: scale(1.08); z-index: 2; }
+    [data-view="cluster"] .work:has(a:focus-visible) { transform: scale(1.2); z-index: 2; }
     [data-view="all"] .work a:hover img,
     [data-view="all"] .work a:focus-visible img,
     [data-view="cluster"] .work a:hover img,
@@ -529,6 +529,8 @@
       width: auto;
       height: auto;
     }
+    .d-group { display: flex; flex-direction: column; width: 100%; }
+    .d-group img { width: 100%; max-height: none; }
     /* progetti con "columns" (es. le carte di Card Game): griglia a N colonne, poi a capo */
     .detail-gallery.grid {
       display: grid;
@@ -835,12 +837,20 @@
         gallery.textContent = '';
         gallery.classList.toggle('grid', !!d.columns);
         gallery.style.setProperty('--cols', d.columns || '');
-        (d.images || [p.src]).forEach(function (src, i) {
+        var n = 0;
+        function addImg(src, box) {
           var img = document.createElement('img');
           img.src = src;
-          img.alt = p.title + ' — immagine ' + (i + 1);
-          if (i > 1) img.loading = 'lazy';
-          gallery.appendChild(img);
+          img.alt = p.title + ' — immagine ' + (++n);
+          if (n > 2) img.loading = 'lazy';
+          box.appendChild(img);
+        }
+        (d.images || [p.src]).forEach(function (item) {
+          if (!Array.isArray(item)) return addImg(item, gallery);
+          var group = document.createElement('div');   // immagini attaccate, senza spazio
+          group.className = 'd-group';
+          item.forEach(function (src) { addImg(src, group); });
+          gallery.appendChild(group);
         });
         document.title = p.title + ' — Leonardo Taccone';
         window.scrollTo(0, 0);
@@ -877,15 +887,15 @@
 
       // opzione 5 · la cover in hover resta ferma e si ingrandisce, come un centro di gravità:
       // le altre scivolano via con una molla (movimento continuo, senza scatti). A ogni fotogramma
-      // un passo di correzione garantisce 24px di respiro dalla cover in hover e che nessuna coppia
+      // un passo di correzione garantisce 40px di respiro dalla cover in hover e che nessuna coppia
       // di cover si tocchi mai. Lo anima questo script, non il CSS.
       var works = originals;         // solo le 16 originali (le copie della striscia restano fuori)
       var calm = window.matchMedia('(prefers-reduced-motion: reduce)');
-      var SCALE = 1.08;              // ingrandimento della cover in hover
-      var CLEAR = 24;                // respiro tra la cover in hover e le altre (px a 1920 di larghezza)
+      var SCALE = 1.2;               // ingrandimento della cover in hover
+      var CLEAR = 40;                // respiro tra la cover in hover e le altre (px a 1920 di larghezza)
       var MIN_GAP = 12;              // distanza minima tra due cover qualsiasi (px a 1920)
-      var AMP = 0.12;                // spinta a distanza, in lati della cover in hover
-      var REACH = 1.6;               // raggio d'azione della spinta, in lati
+      var AMP = 0.28;                // spinta a distanza, in lati della cover in hover
+      var REACH = 1.9;               // raggio d'azione della spinta, in lati
       var OMEGA = 9, ZETA = 0.9;     // molla: rapidità e smorzamento (1 = nessun rimbalzo)
 
       var tiles = works.map(function (li) { return { li: li, ox: 0, oy: 0, vx: 0, vy: 0, sc: 1, vs: 0 }; });
@@ -931,7 +941,7 @@
           t.vs += (kk * (ts - t.sc) + c * t.vs) * dt; t.sc += t.vs * dt;
         });
 
-        // 2) vincoli: nessuna cover si tocca; la cover in hover è ferma e ha 24px di respiro
+        // 2) vincoli: nessuna cover si tocca; la cover in hover è ferma e ha 40px di respiro
         //    (le coppie con la cover in hover si risolvono per prime)
         var pairs = [];
         for (var i = 0; i < tiles.length; i++) {

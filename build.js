@@ -36,7 +36,7 @@ for (const [, slug, cover, nameHtml, catHtml] of src.matchAll(rowRe)) {
   const name = unesc(nameHtml);
   const title = name + ' — Leonardo Taccone';
   const desc = d.overview || [d.subtitle, d.category || (catHtml && unesc(catHtml))].filter(Boolean).join(' · ') || 'Portfolio di Leonardo Taccone.';
-  const image = (d.images && d.images[0]) || cover;
+  const image = (d.images && [].concat(d.images[0])[0]) || cover;
   const url = SITE + '/progetti/' + slug;
   const meta = [
     '<base href="/">',   // Assets/… e i link #vista puntano alla radice del sito
